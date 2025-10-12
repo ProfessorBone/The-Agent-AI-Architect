@@ -658,7 +658,497 @@ class AnalyzerArchitect(CognitiveAgent):
 
 ---
 
-### 3.3 Planning Architect
+### 3.3 Prompt Engineer Architect
+
+> **🎨 Critical Insight**: System prompts are intellectual property and the primary differentiator between high-performing and mediocre agentic systems. This architect transforms prompt engineering from static templates into a dynamic, learning-driven optimization layer[1].
+
+**Role:** Prompt optimization specialist and meta-cognitive strategist—the "prompt whisperer" of the system
+
+**Core Responsibilities:**
+
+1. **Context-Aware Prompt Crafting**: Dynamically generate optimized prompts for each architect based on:
+   - Task complexity (simple vs. complex agents)
+   - Framework (LangGraph vs. CrewAI vs. AutoGen)
+   - User expertise level (beginner vs. advanced)
+   - Past success patterns (episodic memory)
+   - Current context (available tools, constraints, preferences)
+
+2. **Few-Shot Example Management**: Curate and inject relevant examples:
+   - Query episodic memory for similar successful builds
+   - Retrieve procedural memory templates
+   - Format examples for in-context learning
+   - Optimize example count vs. token budget
+
+3. **Prompt Template Library Management**: Maintain procedural memory of proven prompts:
+   - Framework-specific templates (LangGraph, CrewAI, AutoGen)
+   - Role-specific templates (Orchestrator, Analyzer, Planner, Coder, Tester, Reviewer)
+   - Task-specific templates (agent creation, debugging, refactoring)
+   - Constraint templates (security, performance, best practices)
+
+4. **A/B Testing & Optimization**: Continuously improve prompts:
+   - Test prompt variations on similar tasks
+   - Track effectiveness metrics (code quality, test pass rate, user ratings)
+   - Learn which prompt structures work best
+   - Automatically promote winning variants
+
+5. **Prompt Compression & Efficiency**: Optimize token usage:
+   - Compress verbose prompts while maintaining quality
+   - Remove redundant instructions
+   - Balance context richness vs. token cost
+   - Monitor cost-quality tradeoffs
+
+6. **Chain-of-Thought Engineering**: Design reasoning strategies:
+   - Multi-step reasoning prompts for complex tasks
+   - Structured thinking frameworks
+   - Decomposition strategies
+   - Verification and self-correction prompts
+
+7. **Guard Rails & Safety Constraints**: Inject quality/security constraints:
+   - Framework-specific best practices
+   - Security patterns (avoid SQL injection, XSS, etc.)
+   - Code style guidelines
+   - Error handling requirements
+   - Deprecated API warnings
+
+8. **Meta-Reasoning & Introspection**: Understand prompt effectiveness:
+   - Analyze why certain prompts outperform others
+   - Identify structural patterns in successful prompts
+   - Extract reusable strategies
+   - Build curriculum of prompt engineering techniques
+
+9. **Adaptive Mid-Workflow Updates**: Adjust prompts reactively:
+   - Detect struggling architects (low quality outputs)
+   - Inject additional context or constraints
+   - Add clarifying examples
+   - Refine instructions based on intermediate results
+
+10. **Human Feedback Integration**: Learn from developer preferences:
+    - Incorporate user ratings on generated code
+    - Adapt to team coding standards
+    - Personalize prompt strategies
+    - Build developer-specific prompt profiles
+
+**Why Critical:**
+
+Without the Prompt Engineer, every architect uses static, generic prompts that don't adapt to context or learn from experience. Research shows that **optimized prompts can improve output quality by 50%+ and reduce token costs by 30%**[1]. Companies like Anthropic, OpenAI, Cursor, and Replit treat prompt engineering as core IP and competitive advantage.
+
+**Model:** Claude 3.5 Sonnet or GPT-4 (excels at meta-prompting and self-reflection)
+
+**Cognitive Configuration:**
+
+```python
+prompt_engineer_config = {
+    'memory': {
+        'working': WorkingMemory(max_tokens=8000),
+        'episodic_focus': [
+            'prompt_effectiveness',      # Track which prompts worked
+            'A_B_test_results',          # Compare prompt variations
+            'user_feedback',             # Human ratings and preferences
+            'context_patterns',          # What context improves prompts?
+            'failure_modes'              # What prompts led to poor outputs?
+        ],
+        'semantic_priority': [
+            'prompt_patterns',           # Proven prompt structures
+            'CoT_strategies',            # Chain-of-thought techniques
+            'few_shot_examples',         # In-context learning examples
+            'constraint_templates',      # Safety and quality constraints
+            'meta_prompting_research'    # Latest prompt engineering papers
+        ],
+        'procedural_heavy': True         # Prompt templates are procedures
+    },
+    
+    'reasoning': {
+        'reactive_patterns': [
+            'framework_specific_prompts',    # LangGraph vs CrewAI templates
+            'common_task_prompts',           # Standard agent types
+            'role_based_prompts'             # Orchestrator, Coder, etc.
+        ],
+        'deliberative_focus': 'prompt_optimization',
+        'meta_cognitive': True,              # Thinks about thinking (prompts about prompts)
+        'introspection_enabled': True,       # Analyzes own effectiveness
+        'reflection_frequency': 'per_architect_call'  # Continuously improve
+    },
+    
+    'learning': {
+        'learn_from': [
+            'code_quality_scores',       # Did optimized prompt → better code?
+            'test_pass_rates',           # Did testing prompt → better tests?
+            'user_ratings',              # Human feedback on outputs
+            'token_efficiency',          # Shorter prompts with same quality
+            'architect_success_rates',   # Which architects improve most?
+            'context_relevance'          # What context actually helps?
+        ],
+        'optimize_for': 'prompt_effectiveness',
+        'A_B_testing_enabled': True,
+        'meta_learning_enabled': True,       # Learn about learning
+        'curriculum_level': 'expert'         # Advanced meta-prompting
+    },
+    
+    'hirag_usage': {
+        'primary_tiers': ['LOCAL', 'BRIDGE'],
+        'queries': [
+            'retrieve_similar_prompts',
+            'get_successful_examples',
+            'find_prompt_patterns',
+            'query_constraint_templates'
+        ],
+        'stores': 'all prompts with effectiveness metrics and lineage'
+    }
+}
+```
+
+**Tools:**
+
+- **Prompt Template Library** (procedural memory) - Store and retrieve proven prompts
+- **Few-Shot Retriever** (episodic + semantic memory) - Find relevant examples
+- **Token Counter** - Optimize prompt length
+- **Effectiveness Tracker** - A/B test results and quality metrics
+- **Context Analyzer** - Determine what context is relevant
+- **Prompt Lineage Graph** (Neo4j) - Track prompt variants → outcomes → improvements
+- **Meta-Reasoning Engine** - Analyze why prompts work
+- **Human Feedback Interface** (CLI/UI) - Collect developer input
+- **Prompt Compression Tool** - Reduce token usage
+- **Framework Adapter** - Auto-generate framework-specific instructions
+
+**Prompt Engineering Workflow:**
+
+```python
+class PromptEngineerArchitect(CognitiveAgent):
+    async def craft_prompt(
+        self, 
+        target_architect: str,
+        task: Task,
+        analysis: AnalysisResult,
+        context: dict
+    ) -> OptimizedPrompt:
+        """
+        Craft optimized prompt for target architect
+        """
+        # === STEP 1: Retrieve Base Template ===
+        base_template = await self.procedural_memory.get_prompt_template(
+            architect=target_architect,
+            framework=analysis.concepts.framework,
+            task_type=task.type
+        )
+        
+        # === STEP 2: Query Episodic Memory for Similar Builds ===
+        similar_builds = await self.episodic_memory.query(
+            query=task.description,
+            filters={
+                'outcome': 'success',
+                'user_rating': {'$gte': 4},
+                'framework': analysis.concepts.framework,
+                'similarity': 0.75
+            },
+            limit=3
+        )
+        
+        # === STEP 3: Extract Few-Shot Examples ===
+        few_shot_examples = []
+        for build in similar_builds:
+            example = {
+                'task': build.request,
+                'approach': build.plan.summary,
+                'code': build.code_snippet,  # Key excerpt
+                'outcome': build.outcome,
+                'rating': build.user_rating
+            }
+            few_shot_examples.append(example)
+        
+        # === STEP 4: Retrieve Constraint Templates ===
+        constraints = await self.get_constraints(
+            framework=analysis.concepts.framework,
+            security_level='high',
+            quality_standards=context.get('quality_standards', 'production')
+        )
+        
+        # === STEP 5: Analyze Context Relevance ===
+        relevant_context = await self.context_analyzer.filter_context(
+            full_context=context,
+            task=task,
+            target_architect=target_architect,
+            max_tokens=2000  # Budget for context
+        )
+        
+        # === STEP 6: Build Optimized Prompt ===
+        optimized_prompt = f"""
+{base_template.role_definition}
+
+TASK: {task.description}
+COMPLEXITY: {analysis.complexity.level}
+FRAMEWORK: {analysis.concepts.framework}
+
+CONTEXT:
+{self._format_context(relevant_context)}
+
+SUCCESSFUL PATTERNS FROM PAST BUILDS:
+{self._format_examples(few_shot_examples)}
+
+REQUIREMENTS:
+{self._format_requirements(analysis.concepts)}
+
+CONSTRAINTS & BEST PRACTICES:
+{self._format_constraints(constraints)}
+
+EXAMPLES OF HIGH-QUALITY OUTPUT:
+{self._format_procedural_examples(analysis.concepts.framework, target_architect)}
+
+{base_template.output_format}
+
+{self._add_chain_of_thought_instructions(task.complexity)}
+"""
+        
+        # === STEP 7: Compress if Needed ===
+        token_count = self.token_counter.count(optimized_prompt)
+        if token_count > self.max_prompt_tokens:
+            optimized_prompt = await self.compress_prompt(
+                prompt=optimized_prompt,
+                target_tokens=self.max_prompt_tokens,
+                preserve_sections=['TASK', 'CONSTRAINTS', 'EXAMPLES']
+            )
+        
+        # === STEP 8: Store Prompt with Lineage ===
+        prompt_id = await self.store_prompt_lineage(
+            prompt=optimized_prompt,
+            task=task,
+            architect=target_architect,
+            base_template=base_template.id,
+            examples_used=similar_builds,
+            token_count=token_count
+        )
+        
+        return OptimizedPrompt(
+            id=prompt_id,
+            content=optimized_prompt,
+            architect=target_architect,
+            token_count=token_count,
+            examples_count=len(few_shot_examples),
+            context_included=list(relevant_context.keys())
+        )
+    
+    async def evaluate_prompt_effectiveness(
+        self,
+        prompt_id: str,
+        architect_output: dict,
+        metrics: dict
+    ):
+        """
+        Track prompt effectiveness and learn
+        """
+        # === STEP 1: Record Metrics ===
+        effectiveness = {
+            'prompt_id': prompt_id,
+            'code_quality': metrics.get('quality_score', 0),
+            'test_pass_rate': metrics.get('test_pass_rate', 0),
+            'user_rating': metrics.get('user_rating', 0),
+            'token_efficiency': metrics.get('output_tokens', 0) / metrics.get('prompt_tokens', 1),
+            'execution_success': metrics.get('success', False)
+        }
+        
+        await self.episodic_memory.store_prompt_outcome(
+            prompt_id=prompt_id,
+            effectiveness=effectiveness
+        )
+        
+        # === STEP 2: Meta-Reasoning - Why Did This Work/Fail? ===
+        if effectiveness['code_quality'] >= 0.8:
+            # Successful prompt - extract patterns
+            insights = await self.meta_reasoning.analyze_success(
+                prompt_id=prompt_id,
+                what_worked=[
+                    'constraint_specificity',
+                    'example_relevance',
+                    'context_richness',
+                    'CoT_structure'
+                ]
+            )
+            await self.store_insights(insights)
+        
+        elif effectiveness['code_quality'] < 0.5:
+            # Failed prompt - diagnose issues
+            diagnosis = await self.meta_reasoning.diagnose_failure(
+                prompt_id=prompt_id,
+                what_failed=[
+                    'insufficient_context',
+                    'poor_examples',
+                    'unclear_constraints',
+                    'missing_CoT'
+                ]
+            )
+            await self.store_diagnosis(diagnosis)
+        
+        # === STEP 3: A/B Testing Update ===
+        if self.A_B_testing_enabled:
+            await self.update_prompt_rankings(
+                prompt_id=prompt_id,
+                effectiveness_score=effectiveness['code_quality']
+            )
+    
+    async def adapt_prompt_mid_workflow(
+        self,
+        architect: str,
+        current_output: dict,
+        issues: List[str]
+    ) -> str:
+        """
+        Reactively adjust prompt when architect struggles
+        """
+        # Detect common failure modes
+        if 'import_errors' in issues:
+            additional_context = """
+CRITICAL: Previous attempt had import errors.
+- Verify all imports are from correct packages
+- Use latest API syntax (check for deprecated imports)
+- Include all required dependencies
+"""
+        
+        elif 'logic_errors' in issues:
+            additional_context = """
+CRITICAL: Previous attempt had logic errors.
+- Add step-by-step chain-of-thought reasoning
+- Verify edge cases and error handling
+- Test logic with example inputs before finalizing
+"""
+        
+        elif 'style_violations' in issues:
+            additional_context = """
+CRITICAL: Previous attempt violated code style.
+- Follow framework best practices strictly
+- Use idiomatic patterns for {framework}
+- Ensure type hints and docstrings are complete
+"""
+        
+        return additional_context
+    
+    async def generate_curriculum(self) -> PromptCurriculum:
+        """
+        Build curriculum of prompt engineering techniques
+        """
+        # Query all past prompts and outcomes
+        prompt_history = await self.episodic_memory.query_all_prompts()
+        
+        # Extract patterns
+        patterns = await self.meta_reasoning.extract_patterns(
+            prompts=prompt_history,
+            min_success_rate=0.8
+        )
+        
+        curriculum = {
+            'beginner': [
+                'Use clear role definitions',
+                'Provide 1-2 concrete examples',
+                'Specify output format explicitly'
+            ],
+            'intermediate': [
+                'Add chain-of-thought instructions',
+                'Include constraint templates',
+                'Use context-aware examples'
+            ],
+            'advanced': [
+                'Meta-prompt optimization',
+                'Dynamic few-shot selection',
+                'Adaptive constraint injection',
+                'Self-correction loops'
+            ]
+        }
+        
+        return PromptCurriculum(
+            patterns=patterns,
+            lessons=curriculum,
+            success_stories=prompt_history.top_performers()
+        )
+```
+
+**Prompt Memory Integration:**
+
+The Prompt Engineer uses a **specialized sub-tier** within procedural and episodic memory:
+
+```python
+prompt_memory_schema = {
+    # === PROCEDURAL MEMORY: Prompt Templates ===
+    'procedural': {
+        'prompt_templates/': {
+            'orchestrator/': ['coordination.json', 'approval.json', 'routing.json'],
+            'analyzer/': ['pattern_recognition.json', 'complexity_assessment.json'],
+            'planner/': ['architecture_design.json', 'state_schema.json'],
+            'coder/': ['langgraph_gen.json', 'crewai_gen.json', 'error_fixing.json'],
+            'tester/': ['test_generation.json', 'debugging.json'],
+            'reviewer/': ['quality_assessment.json', 'security_audit.json']
+        },
+        'constraint_templates/': {
+            'security.json',
+            'best_practices.json',
+            'framework_specific.json'
+        },
+        'CoT_templates/': {
+            'step_by_step.json',
+            'verification.json',
+            'self_correction.json'
+        }
+    },
+    
+    # === EPISODIC MEMORY: Prompt Outcomes ===
+    'episodic': {
+        'prompt_lineage_graph': {
+            'nodes': ['prompt_id', 'version', 'architect', 'task_type'],
+            'edges': ['derived_from', 'improved_by', 'used_in_build'],
+            'metrics': ['quality_score', 'token_efficiency', 'user_rating']
+        },
+        'A_B_test_results': {
+            'variant_a': 'prompt_id_1',
+            'variant_b': 'prompt_id_2',
+            'winner': 'variant_b',
+            'confidence': 0.85,
+            'metric': 'code_quality'
+        }
+    },
+    
+    # === SEMANTIC MEMORY: Prompt Patterns ===
+    'semantic': {
+        'prompt_patterns': [
+            'Successful role definitions',
+            'Effective constraint structures',
+            'High-performing few-shot formats',
+            'Chain-of-thought templates'
+        ]
+    }
+}
+```
+
+**Human Oversight Interface:**
+
+```python
+# CLI/UI for developer feedback
+prompt_feedback_interface = {
+    'commands': [
+        'approve_prompt <prompt_id>',      # Mark as effective
+        'reject_prompt <prompt_id>',       # Mark as ineffective
+        'rate_prompt <prompt_id> <1-5>',   # Numeric rating
+        'suggest_improvement <prompt_id> <feedback>',  # Text feedback
+        'view_prompt_history <architect>',  # See prompt evolution
+        'compare_prompts <id1> <id2>',     # A/B comparison
+        'export_top_prompts <architect>'   # Download best prompts
+    ],
+    
+    'visibility': {
+        'show_prompts_in_logs': True,      # Transparency
+        'highlight_prompt_changes': True,   # Track evolution
+        'display_effectiveness_metrics': True
+    }
+}
+```
+
+**Research-Backed Benefits:**
+
+1. **50% Quality Improvement**: Optimized prompts → better code (DeepMind, 2023)
+2. **30% Token Efficiency**: Compression without quality loss (Google, 2024)
+3. **Continuous Learning**: A/B testing accumulates expertise over time
+4. **Framework Adaptability**: Automatically adjust to new tools (Anthropic, 2022)
+5. **Competitive Differentiation**: Prompts as core IP (Industry practice)
+
+---
+
+### 3.4 Planning Architect
 
 **Role:** Strategic system design and architectural blueprint creation
 
@@ -1022,9 +1512,9 @@ class ReviewingArchitect(CognitiveAgent):
 
 ---
 
-### 3.7 Complete Multi-Architect Workflow
+### 3.8 Complete Multi-Architect Workflow
 
-**End-to-End Example: Building a Research Agent**
+**End-to-End Example: Building a Research Agent with Prompt Engineering**
 
 ```python
 # === USER REQUEST ===
@@ -1037,10 +1527,11 @@ workflow_plan = await orchestrator.create_workflow_plan(task)
 
 print("🎯 Workflow Plan:")
 print("1. Analyzer → Analyze requirements and patterns")
-print("2. Planner → Create architectural blueprint")
-print("3. Coder → Implement agent code")
-print("4. Tester → Validate and debug")
-print("5. Reviewer → Final quality check")
+print("2. Prompt Engineer → Craft optimized prompts for all architects")
+print("3. Planner → Create architectural blueprint")
+print("4. Coder → Implement agent code")
+print("5. Tester → Validate and debug")
+print("6. Reviewer → Final quality check")
 
 # === ANALYZER ARCHITECT: Deep Analysis ===
 analyzer = AnalyzerArchitect()
@@ -1070,9 +1561,109 @@ Analysis Output:
 }
 """
 
-# === PLANNING ARCHITECT: Architectural Blueprint ===
+# === PROMPT ENGINEER ARCHITECT: Optimize Prompts (NEW!) ===
+prompt_engineer = PromptEngineerArchitect()
+
+# Craft prompts for each downstream architect
+planner_prompt = await prompt_engineer.craft_prompt(
+    target_architect='planner',
+    task=task,
+    analysis=analysis,
+    context={
+        'user_expertise': 'intermediate',
+        'quality_standards': 'production',
+        'similar_builds': analysis.similar_past_builds
+    }
+)
+
+coder_prompt = await prompt_engineer.craft_prompt(
+    target_architect='coder',
+    task=task,
+    analysis=analysis,
+    context={
+        'framework': 'langgraph',
+        'code_style': 'pythonic',
+        'comment_verbosity': 'high',
+        'similar_builds': analysis.similar_past_builds
+    }
+)
+
+"""
+Planner Prompt (optimized):
+"You are a LangGraph architecture specialist.
+
+TASK: Design a ReAct research agent with web search and PDF analysis (medium complexity)
+
+CONTEXT: Similar successful builds:
+- research_agent_v1: ReAct pattern with TavilySearchTool, 5/5 rating, 45min build
+- document_analyzer: PDF processing with LangGraph, 4/5 rating
+
+REQUIREMENTS:
+- Framework: LangGraph StateGraph
+- Pattern: ReAct (reason-act loop)
+- Tools: web_search (Tavily), pdf_reader
+- State: Must include messages, research_results, current_step
+- Error handling: Retry logic for tool failures
+- Checkpointing: Enable resumability
+
+CONSTRAINTS:
+- Use latest LangGraph APIs (ToolNode, conditional_edges)
+- No deprecated patterns (avoid old Tool class)
+- Include human-in-the-loop approval before external API calls
+- Rate limits: Tavily = 100 requests/min
+
+EXAMPLES: [3 proven ReAct architectures from procedural memory]
+
+Design a complete architectural blueprint following these requirements."
+
+
+Coder Prompt (optimized):
+"You are an expert LangGraph code generator specializing in ReAct agents.
+
+TASK: Implement the research agent blueprint (medium complexity)
+
+SUCCESSFUL PATTERN FROM PAST BUILDS:
+research_agent_v1 used this structure and achieved 5/5 rating:
+```python
+class AgentState(TypedDict):
+    messages: List[BaseMessage]
+    research_results: List[Document]
+
+def research_node(state): ...
+tools = [TavilySearchTool()]
+graph = StateGraph(AgentState)
+# ... rest of implementation
+```
+
+REQUIREMENTS:
+- Follow blueprint state schema exactly
+- Use @tool decorator (not Tool class)
+- Add comprehensive type hints
+- Include verbose comments (user preference)
+- Implement error handling for tool failures
+
+CONSTRAINTS:
+- Must call .compile() before execution (common gotcha!)
+- Respect Tavily rate limits (100/min)
+- Add checkpointing for resumability
+- Include human approval node
+
+CODE STYLE:
+- Pythonic idioms
+- Clear variable names
+- Docstrings for all functions
+- Type hints throughout
+
+Generate complete, production-ready implementation."
+"""
+
+# === PLANNING ARCHITECT: Architectural Blueprint (with optimized prompt) ===
 planner = PlanningArchitect()
-blueprint = await planner.plan(task, analysis)
+blueprint = await planner.plan(
+    task=task,
+    analysis=analysis,
+    prompt=planner_prompt  # Uses optimized prompt!
+)
 
 """
 Blueprint Output:
@@ -1100,9 +1691,13 @@ Blueprint Output:
 }
 """
 
-# === CODING ARCHITECT: Implementation ===
+# === CODING ARCHITECT: Implementation (with optimized prompt) ===
 coder = CodingArchitect()
-code = await coder.generate_code(blueprint, analysis)
+code = await coder.generate_code(
+    blueprint=blueprint,
+    analysis=analysis,
+    prompt=coder_prompt  # Uses optimized prompt!
+)
 
 """
 Generated Code (abbreviated):
@@ -1112,12 +1707,17 @@ from langgraph.prebuilt import ToolNode
 from typing import TypedDict, List
 
 class AgentState(TypedDict):
+    """State schema for research agent."""
     messages: List[BaseMessage]
     research_results: List[Document]
     current_step: str
 
 # Research node
 async def research_node(state: AgentState):
+    """
+    Main reasoning node that decides what to do next.
+    Uses LLM with tools to think and act.
+    """
     # Use LLM with tools
     result = await llm_with_tools.ainvoke(state["messages"])
     return {"messages": [result]}
@@ -1193,6 +1793,46 @@ final_result = await orchestrator.aggregate_results({
     'review': review
 })
 
+# === PROMPT ENGINEER: Evaluate Effectiveness & Learn (NEW!) ===
+await prompt_engineer.evaluate_prompt_effectiveness(
+    prompt_id=planner_prompt.id,
+    architect_output=blueprint,
+    metrics={
+        'quality_score': review['quality_score'],
+        'test_pass_rate': test_results['coverage'],
+        'user_rating': 4.5,
+        'token_efficiency': len(code) / planner_prompt.token_count,
+        'success': True
+    }
+)
+
+await prompt_engineer.evaluate_prompt_effectiveness(
+    prompt_id=coder_prompt.id,
+    architect_output=code,
+    metrics={
+        'quality_score': review['quality_score'],
+        'test_pass_rate': test_results['coverage'],
+        'user_rating': 4.5,
+        'output_tokens': len(code.split()),
+        'prompt_tokens': coder_prompt.token_count,
+        'success': True
+    }
+)
+
+"""
+Prompt Engineer Learning Output:
+- Planner prompt effectiveness: 0.88 (HIGH)
+  → Extract pattern: "Including similar builds in context improves architecture quality"
+  → Store in episodic memory for future use
+  
+- Coder prompt effectiveness: 0.92 (VERY HIGH)
+  → Extract pattern: "Verbose comments + few-shot examples → better code structure"
+  → Promote this prompt variant for LangGraph tasks
+  
+- Meta-reasoning insight: "ReAct pattern prompts benefit most from procedural examples"
+  → Update prompt curriculum with this finding
+"""
+
 # === STORE IN HIRAG (Self-Updating) ===
 await orchestrator.store_in_hirag(
     agent_code=code,
@@ -1203,7 +1843,8 @@ await orchestrator.store_in_hirag(
         'tools': ['web_search', 'pdf_reader'],
         'outcome': 'success',
         'quality_score': 0.88,
-        'your_rating': 4.5
+        'your_rating': 4.5,
+        'prompt_ids': [planner_prompt.id, coder_prompt.id]  # Track prompt lineage
     }
 )
 
@@ -1211,33 +1852,44 @@ print("✅ Research agent created successfully!")
 print(f"⭐ Quality Score: {review['quality_score']}")
 print(f"📊 Test Coverage: {test_results['coverage']*100}%")
 print(f"🎯 Confidence: {analysis['confidence']*100}%")
+print(f"🎨 Prompt Effectiveness: Planner={0.88}, Coder={0.92}")
 ```
 
 ---
 
-### 3.8 Advantages of Six-Architect System
+### 3.9 Advantages of Seven-Architect System
 
 **1. Cognitive Diversity**
 - Each architect develops specialized expertise in its domain
-- Mimics real-world engineering team dynamics
+- Mimics real-world engineering team dynamics (including dedicated prompt engineers!)
 - Reduces cognitive load on any single agent
 
-**2. HiRAG Optimization**
+**2. Prompt Engineering as Core IP**
+- **Prompt Engineer** transforms static templates into adaptive, learning-driven optimization
+- Captures "what makes a good prompt" as explicit knowledge (episodic + procedural memory)
+- Enables compound learning: Better prompts → Better outputs → Better prompt patterns
+- Research-backed: 50% quality improvement, 30% token efficiency gains[1]
+
+**3. HiRAG Optimization**
+- Orchestrator → ALL TIERS (workflow patterns, coordination)
 - Analyzer → GLOBAL + BRIDGE (patterns, frameworks)
+- **Prompt Engineer** → LOCAL + PROCEDURAL (prompt templates, effectiveness tracking)
 - Planner → BRIDGE (mappings, concepts)
 - Coder → LOCAL (code examples)
 - Tester → LOCAL (test patterns, bugs)
 - Reviewer → GLOBAL + BRIDGE (best practices)
 
-**3. Compound Learning**
+**4. Compound Learning**
+- Orchestrator learns workflow optimization
 - Analyzer learns pattern recognition
+- **Prompt Engineer learns meta-strategies** (what prompts work and why)
 - Planner learns architecture design
 - Coder learns implementation strategies
 - Tester learns bug patterns
 - Reviewer learns quality standards
-- Each domain improves independently
+- Each domain improves independently + **prompts improve across ALL domains**
 
-**4. Failure Localization**
+**5. Failure Localization**
 - If code fails tests → Coder and Tester iterate
 - If review fails → Reviewer and Coder iterate
 - If analysis is weak → Analyzer improves
@@ -5796,59 +6448,132 @@ WEEK_2_DELIVERABLES = {
 
 #### 9.7.3 Phase 2: Specialist Architects (Weeks 3-4)
 
-**Week 3: Planning Architect + Basic CrewAI Crew**
+**Week 3: Prompt Engineer + Planning Architect**
+
+> **🎨 Critical Week**: Introduce Prompt Engineer as core IP layer before heavy code generation begins. This architect will optimize prompts for all downstream agents, dramatically improving output quality[1].
 
 ```python
 WEEK_3_DELIVERABLES = {
-    'priority_1': 'Planning Architect (LangGraph) - 60% of week',
-    'tasks': [
-        {
-            'task': 'Blueprint generation logic',
-            'time': '12 hours',
-            'output': 'Can create architecture dict with pattern, state_schema, tools'
-        },
-        {
-            'task': 'HiRAG BRIDGE queries for framework concepts',
-            'time': '6 hours',
-            'output': 'Gets LangGraph/CrewAI specific implementation details'
-        },
-        {
-            'task': 'State schema design helper',
-            'time': '4 hours',
-            'output': 'Generates TypedDict/dataclass from requirements'
-        },
-        {
-            'task': 'Implementation step sequencing',
-            'time': '2 hours',
-            'output': 'Ordered list of implementation steps'
-        }
-    ],
+    # ========================================
+    # PRIORITY 1: Prompt Engineer Architect (NEW!) - 40% of week
+    # ========================================
+    'prompt_engineer': {
+        'rationale': 'Must be deployed BEFORE Coder to optimize code generation prompts',
+        'approach': 'Start with static optimized templates, add learning in Phase 4',
+        'tasks': [
+            {
+                'task': 'Design Prompt Template Library schema',
+                'time': '3 hours',
+                'output': 'JSON structure for prompt templates (role, framework, task type)'
+            },
+            {
+                'task': 'Create base prompt templates',
+                'time': '6 hours',
+                'templates': [
+                    'orchestrator_coordination.json',
+                    'analyzer_pattern_recognition.json',
+                    'planner_architecture_design.json',
+                    'coder_langgraph_generation.json',
+                    'coder_crewai_generation.json',
+                    'tester_validation.json',
+                    'reviewer_quality_check.json'
+                ],
+                'output': '7 framework-specific prompt templates in procedural memory'
+            },
+            {
+                'task': 'Implement PromptEngineerArchitect class',
+                'time': '6 hours',
+                'features': [
+                    'craft_prompt(architect, task, analysis, context)',
+                    'retrieve_base_template(architect, framework)',
+                    'inject_few_shot_examples(episodic_query)',
+                    'add_constraints(framework, security_level)',
+                    'compress_prompt(target_tokens)',
+                    'store_prompt_lineage(prompt_id, metadata)'
+                ],
+                'output': 'Working PromptEngineerArchitect with template retrieval'
+            },
+            {
+                'task': 'Build prompt effectiveness tracker',
+                'time': '4 hours',
+                'features': [
+                    'Store prompt_id → output_quality mapping',
+                    'Track token efficiency',
+                    'Record user ratings',
+                    'Basic A/B test infrastructure (Phase 4 active use)'
+                ],
+                'output': 'Can log prompt effectiveness for future learning'
+            },
+            {
+                'task': 'Create Prompt Lineage Graph (Neo4j)',
+                'time': '3 hours',
+                'schema': {
+                    'nodes': ['Prompt', 'Build', 'Outcome'],
+                    'edges': ['USED_IN', 'DERIVED_FROM', 'IMPROVED_BY']
+                },
+                'output': 'Can track prompt evolution and outcomes'
+            }
+        ],
+        'mvp_scope': 'Static optimized templates with lineage tracking (no A/B testing yet)',
+        'phase_4_upgrade': 'Add active learning, A/B testing, meta-reasoning'
+    },
     
-    'priority_2': 'CrewAI Implementation Crew - 40% of week',
-    'tasks_p2': [
-        {
-            'task': 'Setup Coding Architect agent (CrewAI)',
-            'time': '6 hours',
-            'output': 'Agent with role, goal, tools'
-        },
-        {
-            'task': 'Setup Testing Architect agent (CrewAI)',
-            'time': '4 hours',
-            'output': 'Agent that runs basic validation'
-        },
-        {
-            'task': 'Define tasks and crew',
-            'time': '4 hours',
-            'output': 'Sequential crew that generates + tests code'
-        },
-        {
-            'task': 'Wrap crew as LangGraph node',
-            'time': '2 hours',
-            'output': 'run_implementation_crew() function'
-        }
-    ],
+    # ========================================
+    # PRIORITY 2: Planning Architect (LangGraph) - 40% of week
+    # ========================================
+    'planning_architect': {
+        'tasks': [
+            {
+                'task': 'Blueprint generation logic',
+                'time': '12 hours',
+                'output': 'Can create architecture dict with pattern, state_schema, tools',
+                'integration': 'Receives optimized prompt from Prompt Engineer'
+            },
+            {
+                'task': 'HiRAG BRIDGE queries for framework concepts',
+                'time': '6 hours',
+                'output': 'Gets LangGraph/CrewAI specific implementation details'
+            },
+            {
+                'task': 'State schema design helper',
+                'time': '4 hours',
+                'output': 'Generates TypedDict/dataclass from requirements'
+            },
+            {
+                'task': 'Implementation step sequencing',
+                'time': '2 hours',
+                'output': 'Ordered list of implementation steps'
+            }
+        ]
+    },
     
-    'end_of_week_3_milestone': 'Can generate blueprint and produce basic code'
+    # ========================================
+    # PRIORITY 3: CrewAI Crew Setup - 20% of week
+    # ========================================
+    'crewai_setup': {
+        'tasks': [
+            {
+                'task': 'Setup Coding Architect agent (CrewAI)',
+                'time': '6 hours',
+                'output': 'Agent with role, goal, tools',
+                'integration': 'Receives optimized coding prompt from Prompt Engineer'
+            },
+            {
+                'task': 'Setup Testing Architect agent (CrewAI)',
+                'time': '4 hours',
+                'output': 'Agent that runs basic validation'
+            },
+            {
+                'task': 'Define tasks and crew',
+                'time': '4 hours',
+                'output': 'Sequential crew that generates + tests code'
+            }
+        ]
+    },
+    
+    'end_of_week_3_milestone': 'Prompt Engineer optimizes prompts for all architects. Can generate optimized blueprints and basic code with 30-50% better quality than static prompts.',
+    
+    'key_insight': 'Introducing Prompt Engineer early captures quality gains immediately, rather than post-MVP retrofit. Prompt templates become reusable IP.'
 }
 ```
 
@@ -5861,7 +6586,8 @@ WEEK_4_DELIVERABLES = {
         {
             'task': 'Connect all architects in LangGraph workflow',
             'time': '8 hours',
-            'output': 'Orchestrator → Analyzer → Planner → Crew → Result'
+            'output': 'Orchestrator → Analyzer → Prompt Engineer → Planner → Crew → Result',
+            'note': 'Prompt Engineer now in critical path!'
         },
         {
             'task': 'Add error handling and retries',
@@ -5872,6 +6598,12 @@ WEEK_4_DELIVERABLES = {
             'task': 'Implement HiRAG self-updating',
             'time': '6 hours',
             'output': 'New agents stored in Neo4j + ChromaDB automatically'
+        },
+        {
+            'task': 'Prompt effectiveness logging',
+            'time': '2 hours',
+            'output': 'Track which prompts led to successful builds',
+            'storage': 'Episodic memory (prompt_id, build_id, quality_score)'
         }
     ],
     
