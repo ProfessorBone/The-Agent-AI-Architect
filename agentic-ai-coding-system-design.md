@@ -4458,168 +4458,1380 @@ print(result)
 
 ---
 
-## 9. Technical Stack
+## 9. Technology Stack & Implementation Strategy
 
-### 9.1 Core Technologies
+### 9.0 Overview: Hybrid Architecture Philosophy
 
-#### 9.1.1 Language Models
+**Core Principle:** Match framework complexity to task complexity—use the most appropriate tool for each layer of the system.
 
-**Primary Models:**
+**Strategic Approach:**
+- ✅ **LangGraph** for complex, stateful, production-grade orchestration
+- ✅ **CrewAI** for simple, role-based, collaborative sub-workflows (embedded as LangGraph nodes)
+- ✅ **HiRAG** (Hierarchical Graph RAG) for specialized agent-building knowledge
+- ✅ **Local-first** models with API fallback for cost optimization
+- ✅ **Observability-first** from day 1 for debugging and improvement
+- ✅ **Protocol-ready** (MCP, A2A) for future extensibility
 
-```python
-MODEL_CONFIGURATION = {
-    'orchestrator': {
-        'primary': 'meta-llama/Llama-3.1-70B-Instruct',
-        'fallback': 'Qwen/Qwen2.5-72B-Instruct',
-        'quantization': 'GPTQ-4bit',
-        'context_window': 128000,
-        'vram_required': '48GB'
-    },
-    'coder': {
-        'primary': 'deepseek-ai/deepseek-coder-33b-instruct',
-        'fallback': 'codellama/CodeLlama-34b-Instruct',
-        'quantization': 'GPTQ-4bit',
-        'context_window': 16384,
-        'vram_required': '24GB',
-        'specialized_for': 'code_generation'
-    },
-    'analyzer': {
-        'primary': 'Qwen/Qwen2.5-Coder-32B-Instruct',
-        'quantization': 'GPTQ-4bit',
-        'context_window': 32768,
-        'vram_required': '24GB'
-    },
-    'test_debug': {
-        'primary': 'Qwen/Qwen2.5-Coder-32B-Instruct',
-        'quantization': 'GPTQ-4bit',
-        'context_window': 32768,
-        'vram_required': '24GB'
-    },
-    'planner_reviewer': {
-        'primary': 'meta-llama/Llama-3.1-70B-Instruct',
-        'quantization': 'GPTQ-4bit',
-        'context_window': 128000,
-        'vram_required': '48GB'
-    }
-}
-```
+**Why This Hybrid Approach Wins:**
 
-**Why These Models:**
-- **Llama 3.1 70B**: Exceptional reasoning and planning capabilities
-- **DeepSeek Coder 33B**: State-of-the-art code generation, trained on massive code corpus
-- **Qwen 2.5 Coder 32B**: Excellent balance of speed and code understanding
-- **GPTQ 4-bit**: Reduces VRAM requirements by ~75% with minimal quality loss
+| Requirement | Solution | Benefit |
+|-------------|----------|---------|
+| Complex workflow control | LangGraph | Explicit state, conditional routing, error recovery |
+| Simple role-based tasks | CrewAI nodes in LangGraph | Rapid prototyping, natural collaboration |
+| Specialized memory | ChromaDB + Neo4j (HiRAG) | Fast semantic + structural reasoning |
+| Cost control | Local models (Ollama) first | Privacy, speed, no API costs |
+| Debugging | LangSmith/AgentOps | Step-by-step replay, performance analysis |
+| Future-proofing | MCP/A2A protocols | Extensibility, interoperability |
 
-**Total VRAM Requirements:**
-- Minimum: 48GB (run orchestrator + 1 specialist at a time)
-- Recommended: 96GB (run multiple agents concurrently)
-- Optimal: 2x RTX 4090 (48GB) or 1x RTX 6000 Ada (48GB)
+---
 
-#### 9.1.2 Model Serving
+### 9.1 Agent Orchestration Framework
+
+#### 9.1.1 LangGraph: Master Orchestration Layer
+
+**Why LangGraph for Core Orchestration:**
+- ✅ Explicit stateful workflows with TypedDict schemas
+- ✅ Conditional edges for complex routing logic
+- ✅ Human-in-the-loop checkpoints (approval gates)
+- ✅ Persistent memory and error recovery
+- ✅ Production-grade reliability and observability
+- ✅ Native LangSmith tracing integration
+
+**LangGraph Use Cases in Our System:**
 
 ```python
-INFERENCE_STACK = {
-    'server': {
-        'engine': 'vLLM',
-        'version': '0.5.0+',
+LANGGRAPH_RESPONSIBILITIES = {
+    'master_orchestration': {
+        'component': 'OrchestratorArchitect',
+        'complexity': 'HIGH',
         'features': [
-            'PagedAttention for efficient memory',
-            'Continuous batching',
-            'Tensor parallelism',
-            'Quantization support'
+            'Parse user intent',
+            'Route to specialist architects',
+            'Manage approval gates',
+            'Aggregate results',
+            'Error recovery and retry logic'
         ],
-        'alternatives': ['TGI (Text Generation Inference)', 'llama.cpp']
+        'state_schema': 'SystemState (messages, context, progress, errors)'
     },
-    'api': {
-        'framework': 'FastAPI',
-        'protocol': 'OpenAI-compatible',
-        'features': ['Streaming', 'Batching', 'Token usage tracking']
-    },
-    'optimization': {
-        'techniques': [
-            'Flash Attention 2',
-            'KV cache optimization',
-            'Speculative decoding (optional)'
+    
+    'complex_architects': {
+        'components': ['AnalyzerArchitect', 'PlanningArchitect'],
+        'complexity': 'HIGH',
+        'features': [
+            'Multi-tier HiRAG queries (GLOBAL + BRIDGE)',
+            'Conditional logic based on analysis',
+            'Iterative refinement loops',
+            'Complex state accumulation'
         ]
+    },
+    
+    'crewai_integration': {
+        'pattern': 'CrewAI crews as LangGraph nodes',
+        'implementation': '''
+        # CrewAI "Implementation Crew" runs inside LangGraph node
+        def implementation_crew_node(state: SystemState):
+            blueprint = state['blueprint']
+            crew_result = implementation_crew.kickoff(inputs={
+                'blueprint': blueprint,
+                'context': state['context']
+            })
+            return {'code': crew_result.code, 'tests': crew_result.tests}
+        
+        graph.add_node("implementation_team", implementation_crew_node)
+        '''
     }
 }
 ```
 
-**vLLM Configuration Example:**
-```bash
-python -m vllm.entrypoints.openai.api_server \
-    --model meta-llama/Llama-3.1-70B-Instruct \
-    --quantization gptq \
-    --dtype half \
-    --max-model-len 32768 \
-    --gpu-memory-utilization 0.95 \
-    --tensor-parallel-size 2 \
-    --port 8000
+**LangGraph Configuration:**
+
+```python
+from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
+from typing import TypedDict, Annotated, List
+import operator
+
+class SystemState(TypedDict):
+    """Master system state for LangGraph orchestration"""
+    
+    # Request tracking
+    user_request: str
+    task_id: str
+    
+    # Architect outputs (accumulated)
+    analysis: Annotated[dict, operator.add]
+    blueprint: dict
+    code: str
+    test_results: dict
+    review: dict
+    
+    # Workflow control
+    current_architect: str
+    workflow_stage: str
+    requires_approval: bool
+    approved: bool
+    
+    # Memory context
+    hirag_context: dict
+    episodic_memory: List[dict]
+    
+    # Error handling
+    errors: Annotated[List[str], operator.add]
+    retry_count: int
+    
+    # Progress tracking
+    progress: Annotated[List[str], operator.add]
+    status: str  # "running", "blocked", "complete", "failed"
+
+# Initialize graph with checkpointing
+orchestrator_graph = StateGraph(SystemState)
+checkpointer = MemorySaver()  # In-memory for MVP, Redis/Postgres for production
+
+# Add nodes
+orchestrator_graph.add_node("orchestrator", orchestrator_node)
+orchestrator_graph.add_node("analyzer", analyzer_node)
+orchestrator_graph.add_node("planner", planner_node)
+orchestrator_graph.add_node("implementation_crew", crewai_implementation_node)  # CrewAI!
+orchestrator_graph.add_node("human_approval", human_approval_node)
+
+# Conditional routing
+def route_after_analysis(state: SystemState) -> str:
+    if state['analysis']['confidence'] < 0.7:
+        return "needs_clarification"
+    return "proceed_to_planning"
+
+orchestrator_graph.add_conditional_edges(
+    "analyzer",
+    route_after_analysis,
+    {
+        "needs_clarification": "orchestrator",
+        "proceed_to_planning": "planner"
+    }
+)
+
+def route_after_planning(state: SystemState) -> str:
+    if state['requires_approval']:
+        return "human_approval"
+    return "implementation_crew"
+
+orchestrator_graph.add_conditional_edges(
+    "planner",
+    route_after_planning,
+    {
+        "human_approval": "human_approval",
+        "implementation_crew": "implementation_crew"
+    }
+)
+
+# Compile with checkpointing
+app = orchestrator_graph.compile(checkpointer=checkpointer)
 ```
 
-#### 9.1.3 Knowledge Storage
+---
 
-**Vector Database: ChromaDB**
+#### 9.1.2 CrewAI: Collaborative Sub-Workflows
+
+**Why CrewAI for Specialist Tasks:**
+- ✅ Natural role-based agent definition
+- ✅ Lower cognitive overhead for simple collaborations
+- ✅ Built-in task delegation and sequential/parallel execution
+- ✅ Rapid prototyping and iteration
+- ✅ Can run as callable functions inside LangGraph nodes
+
+**CrewAI Use Cases in Our System:**
+
 ```python
-VECTOR_DB_CONFIG = {
-    'database': 'ChromaDB',
-    'version': '0.4.0+',
-    'embedding_model': 'sentence-transformers/all-MiniLM-L6-v2',
-    'embedding_dimension': 384,
-    'distance_metric': 'cosine',
+CREWAI_RESPONSIBILITIES = {
+    'implementation_crew': {
+        'agents': [
+            'CodingArchitect - generates code from blueprint',
+            'TestingArchitect - validates code quality',
+            'ReviewingArchitect - final approval gate'
+        ],
+        'pattern': 'Sequential execution',
+        'complexity': 'LOW-MEDIUM',
+        'rationale': 'Clear roles, defined handoffs, straightforward workflow'
+    },
+    
+    'rapid_prototyping': {
+        'use_case': 'Quick experiments with new patterns',
+        'pattern': 'Parallel or sequential',
+        'rationale': 'Fast iteration without complex LangGraph setup'
+    },
+    
+    'micro_collaborations': {
+        'use_case': 'When 2-3 architects need tight collaboration',
+        'example': 'Tester + Coder iterating on bug fixes',
+        'pattern': 'Embedded in LangGraph conditional loop'
+    }
+}
+```
+
+**CrewAI Implementation Crew Example:**
+
+```python
+from crewai import Agent, Task, Crew, Process
+from langchain_openai import ChatOpenAI
+
+# Define agents
+coding_architect = Agent(
+    role='Coding Architect',
+    goal='Generate working agent code from architectural blueprint',
+    backstory='''You are an expert code generator specializing in agentic AI systems. 
+    You take architectural blueprints and produce clean, production-ready code using 
+    frameworks like LangGraph, CrewAI, and AutoGen.''',
+    llm=ChatOpenAI(model="gpt-4"),
+    tools=[query_hirag_local, generate_code, validate_syntax],
+    verbose=True,
+    memory=True
+)
+
+testing_architect = Agent(
+    role='Testing Architect',
+    goal='Validate code quality through comprehensive testing',
+    backstory='''You are a rigorous QA specialist who ensures generated agents work 
+    correctly through unit tests, integration tests, and edge case validation.''',
+    llm=ChatOpenAI(model="gpt-4o-mini"),
+    tools=[run_tests, check_edge_cases, validate_imports],
+    verbose=True,
+    memory=True
+)
+
+reviewing_architect = Agent(
+    role='Reviewing Architect',
+    goal='Ensure code meets quality standards and best practices',
+    backstory='''You are a senior code reviewer who enforces best practices, security 
+    standards, and architectural consistency.''',
+    llm=ChatOpenAI(model="gpt-4"),
+    tools=[check_best_practices, security_scan, rate_quality],
+    verbose=True,
+    memory=True
+)
+
+# Define tasks
+code_generation_task = Task(
+    description='''Generate complete agent implementation from blueprint: {blueprint}
+    - Follow framework-specific patterns
+    - Integrate all specified tools
+    - Add proper error handling
+    - Include documentation''',
+    agent=coding_architect,
+    expected_output='Complete, working agent code'
+)
+
+testing_task = Task(
+    description='''Test the generated code:
+    - Run unit tests
+    - Check edge cases
+    - Validate imports
+    - Report any issues''',
+    agent=testing_architect,
+    expected_output='Test results with pass/fail status',
+    context=[code_generation_task]  # Depends on code generation
+)
+
+review_task = Task(
+    description='''Review code for quality and best practices:
+    - Check code quality
+    - Validate security
+    - Ensure best practices
+    - Provide approval or revision requests''',
+    agent=reviewing_architect,
+    expected_output='Review decision (APPROVED/NEEDS_REVISION) with findings',
+    context=[code_generation_task, testing_task]
+)
+
+# Create crew
+implementation_crew = Crew(
+    agents=[coding_architect, testing_architect, reviewing_architect],
+    tasks=[code_generation_task, testing_task, review_task],
+    process=Process.sequential,  # Tasks execute in order
+    verbose=True,
+    memory=True,
+    embedder={
+        "provider": "ollama",
+        "config": {"model": "nomic-embed-text"}
+    }
+)
+
+# Function to run crew as LangGraph node
+async def run_implementation_crew(state: SystemState):
+    """
+    LangGraph node that executes CrewAI implementation crew
+    """
+    blueprint = state['blueprint']
+    
+    # Kick off crew
+    result = await implementation_crew.kickoff_async(
+        inputs={'blueprint': blueprint}
+    )
+    
+    # Extract results
+    return {
+        'code': result.tasks_output[0].raw,  # From coding task
+        'test_results': result.tasks_output[1].raw,  # From testing task
+        'review': result.tasks_output[2].raw,  # From review task
+        'status': 'complete' if 'APPROVED' in result.tasks_output[2].raw else 'needs_revision',
+        'progress': [f"✅ Implementation crew completed"]
+    }
+```
+
+---
+
+### 9.2 Memory & Knowledge Layer (HiRAG)
+
+#### 9.2.1 Dual Storage Architecture
+
+**ChromaDB: Vector Similarity Search**
+
+```python
+CHROMADB_CONFIG = {
+    'version': '0.4.24+',
+    'deployment': 'embedded',  # No separate server
+    'location': '~/.agent-ai-architect/chromadb',
+    
     'collections': {
+        'agent_code': {
+            'description': 'Generated agent code embeddings (LOCAL tier)',
+            'embedding_model': 'sentence-transformers/all-MiniLM-L6-v2',
+            'embedding_dim': 384,
+            'metadata_fields': [
+                'framework',
+                'pattern',
+                'tools',
+                'outcome',
+                'quality_score',
+                'graph_node_id'  # Cross-index to Neo4j
+            ],
+            'estimated_size': '10GB after 10k agents'
+        },
+        
+        'documentation': {
+            'description': 'Framework docs, tutorials, examples',
+            'embedding_model': 'same',
+            'metadata_fields': ['framework', 'topic', 'url'],
+            'estimated_size': '2GB'
+        },
+        
         'episodic_memory': {
             'description': 'Past development episodes',
-            'estimated_size': '10GB after 10k episodes'
-        },
-        'semantic_knowledge': {
-            'description': 'Patterns, docs, best practices',
+            'metadata_fields': ['task_type', 'outcome', 'timestamp'],
             'estimated_size': '5GB'
         }
     },
-    'persistence': {
-        'location': '~/.agentic_coder/chroma_db',
-        'backup_frequency': 'daily'
+    
+    'performance': {
+        'query_speed': '<100ms for most queries',
+        'concurrent_queries': 'Yes (thread-safe)',
+        'backup': 'Automatic SQLite backups'
     }
 }
 ```
 
-**Graph Database: Neo4j**
+**Neo4j: Graph Knowledge**
+
 ```python
-GRAPH_DB_CONFIG = {
-    'database': 'Neo4j',
-    'version': '5.0+',
-    'edition': 'Community (free)',
-    'deployment': {
-        'mode': 'embedded',  # Runs locally, no separate server needed
-        'location': '~/.agentic_coder/neo4j_db'
+NEO4J_CONFIG = {
+    'version': '5.15+',
+    'edition': 'Community Edition (free, open-source)',
+    'deployment': 'Docker container (local)',
+    'location': '~/.agent-ai-architect/neo4j',
+    
+    'configuration': {
+        'memory': {
+            'heap_initial': '1G',
+            'heap_max': '4G',
+            'pagecache': '2G'
+        },
+        'performance': {
+            'bolt_threads': 4,
+            'transaction_timeout': '30s'
+        }
     },
-    'estimated_size': '2-5GB after significant usage',
-    'indexes': [
-        'Agent(name)',
-        'Tool(name)',
-        'Pattern(type)',
-        'Framework(name)'
-    ],
-    'backup': 'Weekly automatic dumps'
+    
+    'schema': {
+        'node_types': ['Pattern', 'Framework', 'Agent', 'Tool', 'Concept', 'Gotcha', 'UseCase', 'Learning'],
+        'relationship_types': ['IMPLEMENTS', 'USES', 'BUILT_WITH', 'MAPS_TO', 'REQUIRES', 
+                              'SIMILAR_TO', 'SUCCEEDED_BY', 'COMPOSED_OF', 'GOTCHA_FOR'],
+        'indexes': [
+            'CREATE INDEX pattern_name FOR (p:Pattern) ON (p.name)',
+            'CREATE INDEX framework_name FOR (f:Framework) ON (f.name)',
+            'CREATE INDEX agent_name FOR (a:Agent) ON (a.name)',
+            'CREATE INDEX tool_name FOR (t:Tool) ON (t.name)'
+        ],
+        'constraints': [
+            'CREATE CONSTRAINT pattern_unique FOR (p:Pattern) REQUIRE p.name IS UNIQUE',
+            'CREATE CONSTRAINT framework_unique FOR (f:Framework) REQUIRE f.name IS UNIQUE'
+        ]
+    },
+    
+    'estimated_size': '2-5GB after 1000 agents built',
+    'backup': 'Daily automatic exports',
+    'query_performance': '100-300ms for complex multi-hop queries'
+}
+```
+
+**Cross-Indexing Strategy:**
+
+```python
+CROSS_INDEXING = {
+    'vector_to_graph': {
+        'mechanism': 'Store Neo4j node ID in ChromaDB metadata',
+        'example': '''
+        chroma_collection.add(
+            documents=[agent_code],
+            metadatas=[{
+                'graph_node_id': neo4j_node_id,  # Link to graph
+                'framework': 'langgraph',
+                'pattern': 'ReAct'
+            }]
+        )
+        '''
+    },
+    
+    'graph_to_vector': {
+        'mechanism': 'Store ChromaDB document ID in Neo4j node property',
+        'example': '''
+        CREATE (a:Agent {
+            name: 'research_agent_v2',
+            vector_embedding_id: chroma_doc_id,  # Link to vector
+            created: datetime()
+        })
+        '''
+    },
+    
+    'hybrid_queries': {
+        'pattern': 'Query graph first for structure, then vector for semantics',
+        'example': '''
+        # 1. Graph: Find similar patterns
+        patterns = neo4j.query("MATCH (p:Pattern)-[:SUITABLE_FOR]->(uc:UseCase {name: $use_case})")
+        
+        # 2. Vector: Find code examples
+        for pattern in patterns:
+            examples = chroma.query(
+                query_texts=[pattern.description],
+                where={'pattern': pattern.name}
+            )
+        '''
+    }
 }
 ```
 
 **Why This Combination:**
 - **ChromaDB**: Simple, embedded, perfect for vector similarity search
 - **Neo4j**: Industry-standard graph database, excellent query language (Cypher)
-- **Both**: Can run locally, no cloud dependencies, complete privacy
+- **Cross-indexed**: Best of both worlds - fast semantic + structural reasoning
+- **Local-first**: Both run locally, no cloud dependencies, complete privacy
 
-#### 9.1.4 Code Analysis Tools
+---
+
+### 9.3 Language Models Strategy
+
+#### 9.3.1 Local-First with API Fallback
+
+**Philosophy:** Run models locally for speed, privacy, and cost—fallback to APIs only when necessary.
 
 ```python
-CODE_ANALYSIS_STACK = {
-    'parsing': {
-        'tool': 'tree-sitter',
-        'languages_supported': [
-            'python',
-            'javascript',
-            'typescript',
+MODEL_STRATEGY = {
+    'primary': 'local_via_ollama',
+    'fallback': 'api_providers',
+    'decision_logic': 'try_local_first(timeout=5s), fallback_on_failure_or_unavailable',
+    
+    'local_models': {
+        'provider': 'Ollama',
+        'installation': 'https://ollama.ai',
+        'models_to_pull': [
+            'llama3.1:70b-instruct-q4_K_M',      # Orchestrator, Planner, Reviewer
+            'qwen2.5-coder:32b-instruct-q4_K_M', # Analyzer, Tester
+            'deepseek-coder-v2:16b-q4_K_M',      # Coder (smaller for faster iteration)
+        ],
+        
+        'hardware_requirements': {
+            'minimum': '32GB RAM, 24GB VRAM (RTX 4090)',
+            'recommended': '64GB RAM, 48GB VRAM (2x RTX 4090 or A6000)',
+            'optimal': '128GB RAM, 80GB VRAM (A100)'
+        },
+        
+        'performance': {
+            'llama3.1_70b_q4': '15-25 tokens/sec on RTX 4090',
+            'qwen2.5_32b_q4': '30-40 tokens/sec on RTX 4090',
+            'deepseek_16b_q4': '50-70 tokens/sec on RTX 4090'
+        },
+        
+        'advantages': [
+            'No API costs (critical for side hustle)',
+            'Complete privacy (client code never leaves your machine)',
+            'Faster response times (no network latency)',
+            'Works offline'
+        ]
+    },
+    
+    'api_fallback': {
+        'providers': {
+            'openai': {
+                'models': ['gpt-4', 'gpt-4-turbo', 'gpt-4o-mini'],
+                'use_when': 'Local unavailable or complex reasoning needed'
+            },
+            'anthropic': {
+                'models': ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku'],
+                'use_when': 'Need very long context or superior reasoning'
+            },
+            'deepseek': {
+                'models': ['deepseek-chat', 'deepseek-coder'],
+                'use_when': 'Cost-effective API alternative',
+                'pricing': '~10x cheaper than OpenAI'
+            }
+        },
+        
+        'cost_control': {
+            'strategy': 'Use local 95% of the time, API for 5% edge cases',
+            'budget_alert': 'Notify if monthly API costs exceed $50',
+            'cache_responses': 'Cache API responses in HiRAG to avoid repeat calls'
+        }
+    }
+}
+```
+
+**Model Assignment by Architect:**
+
+```python
+ARCHITECT_MODELS = {
+    'OrchestratorArchitect': {
+        'local': 'ollama/llama3.1:70b-instruct-q4_K_M',
+        'api_fallback': 'openai/gpt-4',
+        'rationale': 'Needs strong reasoning for workflow decisions',
+        'temperature': 0.1,
+        'max_tokens': 4096
+    },
+    
+    'AnalyzerArchitect': {
+        'local': 'ollama/qwen2.5-coder:32b-instruct-q4_K_M',
+        'api_fallback': 'anthropic/claude-3-5-sonnet',
+        'rationale': 'Code analysis requires pattern recognition',
+        'temperature': 0.1,
+        'max_tokens': 2048
+    },
+    
+    'PlanningArchitect': {
+        'local': 'ollama/llama3.1:70b-instruct-q4_K_M',
+        'api_fallback': 'openai/gpt-4',
+        'rationale': 'Strategic planning needs strong reasoning',
+        'temperature': 0.2,
+        'max_tokens': 4096
+    },
+    
+    'CodingArchitect': {
+        'local': 'ollama/deepseek-coder-v2:16b-q4_K_M',
+        'api_fallback': 'anthropic/claude-3-5-sonnet',
+        'rationale': 'Code generation specialist, faster iteration with smaller model',
+        'temperature': 0.1,
+        'max_tokens': 8192
+    },
+    
+    'TestingArchitect': {
+        'local': 'ollama/qwen2.5-coder:32b-instruct-q4_K_M',
+        'api_fallback': 'openai/gpt-4o-mini',
+        'rationale': 'Testing requires code understanding, mini model sufficient for API',
+        'temperature': 0.0,
+        'max_tokens': 2048
+    },
+    
+    'ReviewingArchitect': {
+        'local': 'ollama/llama3.1:70b-instruct-q4_K_M',
+        'api_fallback': 'anthropic/claude-3-5-sonnet',
+        'rationale': 'Quality review needs strong critical thinking',
+        'temperature': 0.1,
+        'max_tokens': 4096
+    }
+}
+```
+
+**Ollama Setup:**
+
+```bash
+# Install Ollama
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Pull models (one-time setup)
+ollama pull llama3.1:70b-instruct-q4_K_M
+ollama pull qwen2.5-coder:32b-instruct-q4_K_M
+ollama pull deepseek-coder-v2:16b-q4_K_M
+
+# Check models
+ollama list
+
+# Serve (runs automatically on port 11434)
+ollama serve
+```
+
+---
+
+### 9.4 Observability & Debugging
+
+#### 9.4.1 LangSmith Integration (MVP)
+
+**Why LangSmith:**
+- ✅ Native LangChain/LangGraph integration
+- ✅ Free tier (up to 5K traces/month)
+- ✅ Step-by-step execution visualization
+- ✅ Trace replay and debugging
+- ✅ Performance analytics
+- ✅ Human feedback collection
+
+```python
+LANGSMITH_CONFIG = {
+    'provider': 'LangSmith',
+    'tier': 'Free (MVP), Plus ($39/mo) for production',
+    'website': 'https://smith.langchain.com',
+    
+    'features_used': {
+        'tracing': 'All LangGraph executions automatically traced',
+        'debugging': 'Step-by-step architect decision visualization',
+        'performance': 'Token usage, latency, cost tracking',
+        'datasets': 'Test cases for evaluation',
+        'feedback': 'Thumbs up/down on generated agents'
+    },
+    
+    'integration': '''
+    # Automatic tracing - just set environment variables
+    import os
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_API_KEY"] = "ls_..."
+    os.environ["LANGCHAIN_PROJECT"] = "agent-ai-architect"
+    
+    # All LangGraph and CrewAI executions now traced automatically!
+    ''',
+    
+    'dashboard_views': [
+        'All agent builds (timeline)',
+        'Success/failure rate',
+        'Average build time',
+        'Token usage by architect',
+        'Error patterns',
+        'User feedback scores'
+    ]
+}
+```
+
+#### 9.4.2 AgentOps (Post-MVP)
+
+**Why AgentOps (Later):**
+- ✅ Multi-framework support (LangGraph + CrewAI + custom)
+- ✅ Advanced session replay
+- ✅ Cost tracking across providers
+- ✅ Custom analytics
+
+```python
+AGENTOPS_CONFIG = {
+    'provider': 'AgentOps',
+    'tier': 'Free tier available, $50/mo for teams',
+    'when_to_add': 'After MVP validation (month 3-4)',
+    
+    'additional_features': {
+        'session_replay': 'Watch entire agent builds in real-time',
+        'cost_tracking': 'Track costs across Ollama + API providers',
+        'custom_metrics': 'HiRAG query counts, architect handoffs',
+        'alerts': 'Notify on failures or cost spikes'
+    }
+}
+```
+
+---
+
+### 9.5 Protocol Compliance & Future-Proofing
+
+#### 9.5.1 Model Context Protocol (MCP) Readiness
+
+**What is MCP:**
+- Standard protocol for AI agents to interact with external tools and data sources
+- Created by Anthropic, adopted by industry
+- Enables interoperability between different agent systems
+
+```python
+MCP_INTEGRATION = {
+    'status': 'Planned for Phase 2 (post-MVP)',
+    'priority': 'MEDIUM',
+    
+    'implementation_strategy': {
+        'phase_1_mvp': 'Internal tools only (HiRAG, file ops, git)',
+        'phase_2': 'Expose tools via MCP protocol',
+        'phase_3': 'Consume external MCP tools (Brave search, GitHub, etc.)'
+    },
+    
+    'benefits': {
+        'interoperability': 'Agents can use tools from other MCP-compliant systems',
+        'extensibility': 'Easy to add new tools without code changes',
+        'standardization': 'Follow industry standards for tool calling'
+    },
+    
+    'example_mcp_tool': '''
+    # Expose HiRAG as MCP tool
+    @mcp_tool
+    def query_hirag_global(query: str, use_case: str) -> dict:
+        """
+        Query HiRAG GLOBAL tier for agent patterns
+        
+        Args:
+            query: Search query for patterns
+            use_case: Use case context (research, analysis, etc.)
+        
+        Returns:
+            dict: {patterns: [...], confidence: float}
+        """
+        return hirag.query_global(query, {'use_case': use_case})
+    '''
+}
+```
+
+#### 9.5.2 Agent-to-Agent (A2A) Protocol Readiness
+
+**What is A2A:**
+- Protocol for agents from different systems to communicate
+- Enables distributed agent networks ("Agentic Mesh")
+- Critical for future scalability
+
+```python
+A2A_INTEGRATION = {
+    'status': 'Designed for, implemented in Phase 3',
+    'priority': 'LOW (MVP), HIGH (scale)',
+    
+    'use_cases': {
+        'distributed_teams': 'Multiple Agent AI Architect instances collaborate',
+        'specialist_networks': 'Connect to external specialist agents (security, performance)',
+        'marketplace': 'Offer your architects as services to other systems'
+    },
+    
+    'architecture_ready': {
+        'modular_architects': 'Each architect can be exposed as independent service',
+        'standard_interfaces': 'All architects have consistent input/output schemas',
+        'stateless_operations': 'Architects can be called remotely without local state'
+    }
+}
+```
+
+---
+
+### 9.6 Multi-Modal Readiness (Future)
+
+**Current State:** Text-only (code, documentation)
+**Future Vision:** Multi-modal reasoning (diagrams, screenshots, videos)
+
+```python
+MULTIMODAL_STRATEGY = {
+    'timeline': 'Phase 4 (months 7-9)',
+    'priority': 'LOW (MVP), MEDIUM (enhancement)',
+    
+    'planned_capabilities': {
+        'vision': {
+            'use_cases': [
+                'Analyze architecture diagrams',
+                'Read UI screenshots for automation',
+                'Parse flowcharts and decision trees'
+            ],
+            'models': [
+                'GPT-4 Vision',
+                'Claude 3.5 Sonnet (vision)',
+                'Gemini 2.0 Flash (vision)',
+                'DeepSeek-VL (local)'
+            ]
+        },
+        
+        'diagram_generation': {
+            'use_cases': [
+                'Generate architecture diagrams from blueprints',
+                'Create workflow visualizations',
+                'Produce state machine diagrams'
+            ],
+            'tools': ['mermaid.js', 'graphviz', 'plantuml']
+        }
+    },
+    
+    'architecture_ready': '''
+    # Model factory already supports multimodal
+    def get_llm(architect_name: str, multimodal: bool = False):
+        if multimodal and is_available('gpt-4-vision'):
+            return ChatOpenAI(model="gpt-4-vision-preview")
+        return get_standard_llm(architect_name)
+    '''
+}
+```
+
+---
+
+### 9.7 Development Roadmap (6-Week MVP + Beyond)
+
+#### 9.7.1 MVP Philosophy
+
+**Core Principle:** Ship something immediately useful, then iterate based on real usage.
+
+**MVP Success Criteria:**
+- ✅ Can build a simple ReAct agent from natural language request
+- ✅ HiRAG stores and retrieves past agents
+- ✅ Each build makes the next build slightly easier (compound learning)
+- ✅ Runs entirely locally (no API dependencies for basic usage)
+- ✅ Basic VS Code integration (command palette + simple chat)
+
+**NOT Required for MVP:**
+- ❌ Perfect code quality
+- ❌ All 6 architects fully implemented
+- ❌ Multi-modal support
+- ❌ MCP/A2A protocols
+- ❌ Advanced observability dashboards
+
+---
+
+#### 9.7.2 Phase 1: Foundation (Weeks 1-2)
+
+**Week 1: Memory & RAG Infrastructure**
+
+```python
+WEEK_1_DELIVERABLES = {
+    'priority_1': 'HiRAG System (80% of week)',
+    'tasks': [
+        {
+            'task': 'Setup Neo4j Docker container',
+            'time': '2 hours',
+            'output': 'Running Neo4j on localhost:7687'
+        },
+        {
+            'task': 'Setup ChromaDB embedded',
+            'time': '2 hours',
+            'output': 'ChromaDB client initialized, collections created'
+        },
+        {
+            'task': 'Implement 3-tier HiRAG retrieval',
+            'time': '16 hours',
+            'sub_tasks': [
+                'Global tier (Neo4j Cypher queries)',
+                'Bridge tier (Neo4j + ChromaDB hybrid)',
+                'Local tier (ChromaDB similarity search)',
+                'Cross-indexing logic'
+            ],
+            'output': 'Can query all 3 tiers successfully'
+        },
+        {
+            'task': 'Create initial seed data',
+            'time': '8 hours',
+            'output': '~50 nodes (patterns, frameworks, tools), ~100 relationships'
+        },
+        {
+            'task': 'Test queries',
+            'time': '4 hours',
+            'output': 'Unit tests for all 3 HiRAG tiers'
+        }
+    ],
+    
+    'priority_2': 'FastAPI Backend Scaffold (20% of week)',
+    'tasks_p2': [
+        'Project structure setup',
+        'Basic API routes (/api/agents/build, /api/memory/query)',
+        'HiRAG integration',
+        'Health check endpoint'
+    ]
+}
+```
+
+**Week 2: Orchestrator + Analyzer Architects (LangGraph)**
+
+```python
+WEEK_2_DELIVERABLES = {
+    'priority_1': 'Orchestrator Architect (50% of week)',
+    'tasks': [
+        {
+            'task': 'LangGraph StateGraph setup',
+            'time': '8 hours',
+            'output': 'SystemState TypedDict, graph with basic nodes'
+        },
+        {
+            'task': 'Intent parsing logic',
+            'time': '6 hours',
+            'output': 'Can extract pattern, framework, tools from user request'
+        },
+        {
+            'task': 'Basic routing logic',
+            'time': '6 hours',
+            'output': 'Can route to mock architects (placeholders)'
+        },
+        {
+            'task': 'Human approval node',
+            'time': '4 hours',
+            'output': 'Simple CLI prompt for approval (VS Code later)'
+        }
+    ],
+    
+    'priority_2': 'Analyzer Architect (50% of week)',
+    'tasks_p2': [
+        {
+            'task': 'HiRAG GLOBAL query implementation',
+            'time': '8 hours',
+            'output': 'Can query patterns from Neo4j'
+        },
+        {
+            'task': 'HiRAG BRIDGE query implementation',
+            'time': '8 hours',
+            'output': 'Can get framework mappings'
+        },
+        {
+            'task': 'Concept extraction',
+            'time': '4 hours',
+            'output': 'Structured dict: {pattern, framework, tools, complexity}'
+        },
+        {
+            'task': 'Analysis result synthesis',
+            'time': '4 hours',
+            'output': 'Complete AnalysisResult with patterns + similar agents + gotchas'
+        }
+    ],
+    
+    'end_of_week_2_milestone': 'Can analyze user request and query HiRAG successfully'
+}
+```
+
+---
+
+#### 9.7.3 Phase 2: Specialist Architects (Weeks 3-4)
+
+**Week 3: Planning Architect + Basic CrewAI Crew**
+
+```python
+WEEK_3_DELIVERABLES = {
+    'priority_1': 'Planning Architect (LangGraph) - 60% of week',
+    'tasks': [
+        {
+            'task': 'Blueprint generation logic',
+            'time': '12 hours',
+            'output': 'Can create architecture dict with pattern, state_schema, tools'
+        },
+        {
+            'task': 'HiRAG BRIDGE queries for framework concepts',
+            'time': '6 hours',
+            'output': 'Gets LangGraph/CrewAI specific implementation details'
+        },
+        {
+            'task': 'State schema design helper',
+            'time': '4 hours',
+            'output': 'Generates TypedDict/dataclass from requirements'
+        },
+        {
+            'task': 'Implementation step sequencing',
+            'time': '2 hours',
+            'output': 'Ordered list of implementation steps'
+        }
+    ],
+    
+    'priority_2': 'CrewAI Implementation Crew - 40% of week',
+    'tasks_p2': [
+        {
+            'task': 'Setup Coding Architect agent (CrewAI)',
+            'time': '6 hours',
+            'output': 'Agent with role, goal, tools'
+        },
+        {
+            'task': 'Setup Testing Architect agent (CrewAI)',
+            'time': '4 hours',
+            'output': 'Agent that runs basic validation'
+        },
+        {
+            'task': 'Define tasks and crew',
+            'time': '4 hours',
+            'output': 'Sequential crew that generates + tests code'
+        },
+        {
+            'task': 'Wrap crew as LangGraph node',
+            'time': '2 hours',
+            'output': 'run_implementation_crew() function'
+        }
+    ],
+    
+    'end_of_week_3_milestone': 'Can generate blueprint and produce basic code'
+}
+```
+
+**Week 4: Integration + Reviewing Architect**
+
+```python
+WEEK_4_DELIVERABLES = {
+    'priority_1': 'End-to-End Integration - 50% of week',
+    'tasks': [
+        {
+            'task': 'Connect all architects in LangGraph workflow',
+            'time': '8 hours',
+            'output': 'Orchestrator → Analyzer → Planner → Crew → Result'
+        },
+        {
+            'task': 'Add error handling and retries',
+            'time': '6 hours',
+            'output': 'Can recover from failures gracefully'
+        },
+        {
+            'task': 'Implement HiRAG self-updating',
+            'time': '6 hours',
+            'output': 'New agents stored in Neo4j + ChromaDB automatically'
+        }
+    ],
+    
+    'priority_2': 'Reviewing Architect (CrewAI) - 30% of week',
+    'tasks_p2': [
+        {
+            'task': 'Quality check logic',
+            'time': '4 hours',
+            'output': 'Validates syntax, imports, basic structure'
+        },
+        {
+            'task': 'Best practices validation',
+            'time': '4 hours',
+            'output': 'Checks against framework best practices from HiRAG'
+        },
+        {
+            'task': 'Approval/rejection decision',
+            'time': '4 hours',
+            'output': 'Returns APPROVED or NEEDS_REVISION with reasons'
+        }
+    ],
+    
+    'priority_3': 'Testing & Polish - 20% of week',
+    'tasks_p3': [
+        'End-to-end test: Build simple ReAct agent',
+        'Test HiRAG retrieval at each stage',
+        'Test error recovery',
+        'CLI polish and user feedback'
+    ],
+    
+    'end_of_week_4_milestone': 'Can build complete agent end-to-end with quality checks'
+}
+```
+
+---
+
+#### 9.7.4 Phase 3: VS Code Extension (Weeks 5-6)
+
+**Week 5: Basic Extension + Chat Interface**
+
+```python
+WEEK_5_DELIVERABLES = {
+    'priority_1': 'VS Code Extension Scaffold - 40% of week',
+    'tasks': [
+        {
+            'task': 'Extension project setup',
+            'time': '4 hours',
+            'output': 'package.json, tsconfig.json, basic extension structure'
+        },
+        {
+            'task': 'Command palette integration',
+            'time': '6 hours',
+            'output': 'Commands: "Build Agent", "Query HiRAG", "View Progress"'
+        },
+        {
+            'task': 'WebSocket connection to FastAPI',
+            'time': '6 hours',
+            'output': 'Real-time communication between extension and backend'
+        }
+    ],
+    
+    'priority_2': 'Chat Webview Interface - 40% of week',
+    'tasks_p2': [
+        {
+            'task': 'Chat webview component',
+            'time': '8 hours',
+            'output': 'React-based chat UI in VS Code panel'
+        },
+        {
+            'task': 'Message handling',
+            'time': '4 hours',
+            'output': 'Send user messages, receive architect responses'
+        },
+        {
+            'task': 'Progress visualization',
+            'time': '4 hours',
+            'output': 'Show which architect is currently working'
+        }
+    ],
+    
+    'priority_3': 'Approval Gates UI - 20% of week',
+    'tasks_p3': [
+        'Blueprint preview modal',
+        'Approve/Reject buttons',
+        'Code diff viewer (basic)'
+    ]
+}
+```
+
+**Week 6: Observability + Polish**
+
+```python
+WEEK_6_DELIVERABLES = {
+    'priority_1': 'LangSmith Integration - 40% of week',
+    'tasks': [
+        {
+            'task': 'Setup LangSmith account and API key',
+            'time': '1 hour',
+            'output': 'Account created, free tier activated'
+        },
+        {
+            'task': 'Add environment variables',
+            'time': '1 hour',
+            'output': 'LANGCHAIN_TRACING_V2=true, keys set'
+        },
+        {
+            'task': 'Test tracing',
+            'time': '2 hours',
+            'output': 'Can see all LangGraph executions in LangSmith dashboard'
+        },
+        {
+            'task': 'Add custom metadata to traces',
+            'time': '4 hours',
+            'output': 'Traces include architect names, HiRAG queries, decisions'
+        },
+        {
+            'task': 'Create evaluation dataset',
+            'time': '8 hours',
+            'output': '10 test cases (simple to complex agent builds)'
+        }
+    ],
+    
+    'priority_2': 'Documentation + Polish - 40% of week',
+    'tasks_p2': [
+        'README with setup instructions',
+        'Quick start guide',
+        'Architecture documentation',
+        'Video demo (5 min)',
+        'Error message improvements',
+        'Loading states and animations'
+    ],
+    
+    'priority_3': 'User Testing - 20% of week',
+    'tasks_p3': [
+        'Build 5 different agents yourself',
+        'Note pain points and bugs',
+        'Gather initial quality metrics',
+        'Create backlog for Phase 4'
+    ],
+    
+    'end_of_week_6_milestone': 'MVP COMPLETE - Can build agents via VS Code with observability'
+}
+```
+
+---
+
+#### 9.7.5 Post-MVP Phases
+
+**Phase 4: Real-World Validation (Weeks 7-12)**
+
+```python
+PHASE_4_GOALS = {
+    'timeline': 'Weeks 7-12 (1.5 months)',
+    'focus': 'Use MVP for real client projects',
+    
+    'activities': [
+        'Build 20+ agents for actual use cases',
+        'Gather performance metrics',
+        'Identify failure patterns',
+        'Collect user feedback',
+        'Build HiRAG knowledge base organically'
+    ],
+    
+    'improvements': [
+        'Add missing patterns to HiRAG seed data',
+        'Fix bugs discovered in real usage',
+        'Improve error messages based on confusion points',
+        'Optimize slow queries',
+        'Add most-requested features'
+    ],
+    
+    'success_metrics': [
+        'Can build 80% of agent requests without human intervention',
+        'HiRAG has 100+ stored agents',
+        'Average build time < 5 minutes',
+        'Quality score > 0.80 on average',
+        'User satisfaction > 4/5'
+    ]
+}
+```
+
+**Phase 5: Advanced Features (Weeks 13-20)**
+
+```python
+PHASE_5_ENHANCEMENTS = {
+    'timeline': 'Weeks 13-20 (2 months)',
+    'focus': 'Add advanced capabilities based on real needs',
+    
+    'features': {
+        'agentops_integration': {
+            'why': 'Better observability than LangSmith free tier',
+            'time': '1 week',
+            'benefit': 'Advanced session replay, cost tracking'
+        },
+        
+        'fine_tuning_pipeline': {
+            'why': 'Improve code generation quality',
+            'time': '2 weeks',
+            'benefit': 'Custom models trained on your successful agents'
+        },
+        
+        'multi_modal_support': {
+            'why': 'Analyze architecture diagrams',
+            'time': '2 weeks',
+            'benefit': 'Can understand visual inputs'
+        },
+        
+        'mcp_protocol': {
+            'why': 'Interoperability with other tools',
+            'time': '1 week',
+            'benefit': 'Can use external MCP tools'
+        },
+        
+        'advanced_testing': {
+            'why': 'Better quality assurance',
+            'time': '2 weeks',
+            'benefit': 'Automated integration tests, property-based testing'
+        }
+    }
+}
+```
+
+**Phase 6: Scale & Polish (Weeks 21-24)**
+
+```python
+PHASE_6_MATURITY = {
+    'timeline': 'Weeks 21-24 (1 month)',
+    'focus': 'Production-ready, marketable system',
+    
+    'activities': [
+        'Performance optimization (query speed, model inference)',
+        'Security hardening',
+        'Comprehensive documentation',
+        'Tutorial videos and examples',
+        'Case studies from real usage',
+        'Benchmark against manual development'
+    ],
+    
+    'optionality_decision_point': '''
+    At this point, decide:
+    1. Keep as secret weapon (competitive advantage)
+    2. Open source (thought leadership, community)
+    3. Productize (SaaS for other developers)
+    4. Hybrid (open core + premium features)
+    '''
+}
+```
+
+---
+
+### 9.8 Project Structure
+
+```python
+RECOMMENDED_PROJECT_STRUCTURE = {
+    'repository': 'agent-ai-architect',
+    'structure': '''
+agent-ai-architect/
+├── backend/
+│   ├── api/
+│   │   ├── main.py              # FastAPI app
+│   │   ├── routes/
+│   │   │   ├── agents.py        # /api/agents/*
+│   │   │   ├── memory.py        # /api/memory/*
+│   │   │   ├── health.py        # /api/health
+│   │   │   └── websocket.py     # WebSocket for streaming
+│   │   └── dependencies.py      # Dependency injection
+│   ├── architects/
+│   │   ├── __init__.py
+│   │   ├── base.py              # BaseArchitect class
+│   │   ├── orchestrator.py      # LangGraph orchestrator
+│   │   ├── analyzer.py          # LangGraph analyzer
+│   │   ├── planner.py           # LangGraph planner
+│   │   └── crews/
+│   │       └── implementation_crew.py  # CrewAI crew
+│   ├── memory/
+│   │   ├── __init__.py
+│   │   ├── hirag.py             # HiRAG 3-tier implementation
+│   │   ├── chromadb_client.py   # Vector store
+│   │   ├── neo4j_client.py      # Graph store
+│   │   └── seed_data.py         # Initial knowledge seeding
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── state.py             # LangGraph states (TypedDict)
+│   │   ├── schemas.py           # Pydantic models
+│   │   └── results.py           # Result types
+│   ├── tools/
+│   │   ├── __init__.py
+│   │   ├── hirag_tools.py       # HiRAG query tools
+│   │   ├── code_tools.py        # Code generation/validation
+│   │   └── file_tools.py        # File operations
+│   └── utils/
+│       ├── __init__.py
+│       ├── llm.py               # Model factory (Ollama + API)
+│       ├── config.py            # Settings (pydantic-settings)
+│       └── logging.py           # Logging setup
+├── vscode-extension/
+│   ├── src/
+│   │   ├── extension.ts         # Extension entry point
+│   │   ├── commands/
+│   │   │   ├── buildAgent.ts
+│   │   │   ├── queryHirag.ts
+│   │   │   └── viewProgress.ts
+│   │   ├── chat/
+│   │   │   ├── ChatProvider.ts
+│   │   │   └── webview/         # React UI
+│   │   ├── api/
+│   │   │   └── backendClient.ts # WebSocket client
+│   │   └── utils/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── README.md
+├── docker/
+│   ├── docker-compose.yml       # Neo4j + optional services
+│   └── Dockerfile.backend       # Backend container
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+├── docs/
+│   ├── architecture.md
+│   ├── quickstart.md
+│   ├── api.md
+│   └── examples/
+├── scripts/
+│   ├── setup.sh                 # One-command setup
+│   ├── seed_hirag.py            # Seed initial data
+│   └── pull_models.sh           # Pull Ollama models
+├── .env.example
+├── pyproject.toml               # Poetry dependencies
+├── README.md
+└── LICENSE
+    '''
+}
+```
+
+---
+
+### 9.9 Technology Stack Summary Table
+
+| Layer | Technology | Purpose | MVP Priority |
+|-------|-----------|---------|--------------|
+| **Orchestration** | LangGraph | Master workflow control, stateful routing | CRITICAL |
+| **Simple Workflows** | CrewAI (in LangGraph nodes) | Role-based collaboration | HIGH |
+| **Vector Memory** | ChromaDB | Fast semantic search (LOCAL tier) | CRITICAL |
+| **Graph Memory** | Neo4j | Structural knowledge (GLOBAL/BRIDGE) | CRITICAL |
+| **Local Models** | Ollama | Cost-free, private inference | HIGH |
+| **API Fallback** | OpenAI/Anthropic/DeepSeek | Complex reasoning when needed | MEDIUM |
+| **Backend** | FastAPI + AsyncIO | Modern async API | CRITICAL |
+| **UI** | VS Code Extension (TypeScript) | Native developer workflow | HIGH |
+| **Observability** | LangSmith (MVP), AgentOps (later) | Debugging and tracing | HIGH |
+| **Protocol Ready** | MCP, A2A | Future extensibility | LOW (Phase 2-3) |
+| **Multi-Modal** | GPT-4V, Claude 3.5V (future) | Vision capabilities | LOW (Phase 4) |
+| **Deployment** | Docker Compose (MVP) | Simple local setup | MEDIUM |
+
+---
+
+**🎯 This hybrid architecture gives you:**
+- ✅ **Production-grade foundation** (LangGraph for complex workflows)
+- ✅ **Rapid prototyping** (CrewAI for simple collaborations)
+- ✅ **Specialized memory** (HiRAG for agent-building knowledge)
+- ✅ **Cost optimization** (local-first with API fallback)
+- ✅ **Future-proof** (MCP, A2A, multi-modal ready)
+- ✅ **Realistic timeline** (6 weeks to MVP, 6 months to mature)
+
+---
             'rust',
             'go'
         ],
