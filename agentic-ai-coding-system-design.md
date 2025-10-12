@@ -1267,51 +1267,119 @@ Every agent in our system has three cognitive capabilities:
 
 **Key Innovation**: These systems are specialized for agentic AI development, understanding patterns like LangGraph workflows, multi-agent architectures, and tool integration.
 
-### 4.2 Memory Architecture
+### 4.2 Memory Architecture: Complete Cognitive Memory System
 
-#### 4.2.1 Four-Tier Memory Model
+> **🎯 Critical Design Decision**: Following latest best practices for agentic AI systems, we implement a **complete memory hierarchy** from day one—episodic, semantic, procedural, and working memory—enabling true self-improvement and adaptive learning[1][2].
+
+#### 4.2.0 Why a Complete Memory System?
+
+**Traditional Approach (Incomplete):**
+- ❌ Only semantic memory (RAG over docs)
+- ❌ No learning from past experiences
+- ❌ Every task starts from scratch
+- ❌ Can't improve strategies over time
+
+**Our Approach (Complete Memory Hierarchy):**
+- ✅ **Episodic Memory**: Learn from every agent-building session
+- ✅ **Semantic Memory**: Structured knowledge (patterns, best practices)
+- ✅ **Procedural Memory**: "How-to" templates and workflows
+- ✅ **Working Memory**: Active context with smart compaction
+
+**Benefits:**
+1. **Continuous Learning**: System improves with every agent built
+2. **Adaptive Strategies**: Orchestrator learns which approaches work best
+3. **Fast Implementation**: Procedural memory accelerates repeated tasks
+4. **Rich Context**: Working memory maintains coherent task flow
+
+#### 4.2.1 Complete Four-Tier Memory Model
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                  MEMORY HIERARCHY                        │
-│                                                          │
-│  ┌────────────────────────────────────────────────┐    │
-│  │  1. WORKING MEMORY (8-12K tokens)              │    │
-│  │     Current task context                       │    │
-│  │     • Active code snippets                     │    │
-│  │     • Tool results                             │    │
-│  │     • Conversation history                     │    │
-│  │     • Auto-compaction at 80%                   │    │
-│  └───────────────────┬────────────────────────────┘    │
-│                      │                                  │
-│  ┌───────────────────▼────────────────────────────┐    │
-│  │  2. EPISODIC MEMORY (Vector DB)                │    │
-│  │     Past experiences & episodes                │    │
-│  │     • Successful agent implementations         │    │
-│  │     • Debugging sessions                       │    │
-│  │     • User interactions                        │    │
-│  │     • Architecture decisions                   │    │
-│  └───────────────────┬────────────────────────────┘    │
-│                      │                                  │
-│  ┌───────────────────▼────────────────────────────┐    │
-│  │  3. SEMANTIC MEMORY (Graph + Vector)           │    │
-│  │     Long-term knowledge                        │    │
-│  │     • Agent design patterns                    │    │
-│  │     • Framework documentation                  │    │
-│  │     • Best practices                           │    │
-│  │     • Anti-patterns                            │    │
-│  └───────────────────┬────────────────────────────┘    │
-│                      │                                  │
-│  ┌───────────────────▼────────────────────────────┐    │
-│  │  4. PROCEDURAL MEMORY (Code Procedures)        │    │
-│  │     How-to knowledge                           │    │
-│  │     • Create LangGraph agent (8 steps)         │    │
-│  │     • Implement tool calling (6 steps)         │    │
-│  │     • Setup multi-agent system (7 steps)       │    │
-│  │     • Add memory to agent (6 steps)            │    │
-│  └────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                    COMPREHENSIVE MEMORY HIERARCHY                 │
+│            (Best Practice for Agentic AI Systems)                 │
+│                                                                   │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  1. WORKING MEMORY (8-12K tokens)                       │    │
+│  │     SHORT-TERM: Current task context                    │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     • Active code snippets & edits                      │    │
+│  │     • Tool execution results                            │    │
+│  │     • Current conversation thread                       │    │
+│  │     • Architect decisions & handoffs                    │    │
+│  │     • Auto-compaction at 80% capacity                   │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     Implementation: Python class (in-memory)            │    │
+│  │     Refresh: Per-session (cleared after build)          │    │
+│  └────────────────────┬────────────────────────────────────┘    │
+│                       │ Summarize → Long-term                    │
+│  ┌────────────────────▼────────────────────────────────────┐    │
+│  │  2. EPISODIC MEMORY (Vector + Graph Hybrid)             │    │
+│  │     LONG-TERM: Past agent-building experiences          │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     • Complete agent build sessions (task → outcome)    │    │
+│  │     • Architecture decisions & rationale                │    │
+│  │     • Debugging episodes & solutions                    │    │
+│  │     • User feedback & satisfaction scores               │    │
+│  │     • Errors encountered & fixes applied                │    │
+│  │     • What worked vs. what failed (with context)        │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     Implementation: ChromaDB (vector) + Neo4j (graph)   │    │
+│  │     Storage: Permanent, indexed by similarity & time    │    │
+│  │     Learning Loop: Inform future builds & strategies    │    │
+│  └────────────────────┬────────────────────────────────────┘    │
+│                       │ Extract Patterns →                       │
+│  ┌────────────────────▼────────────────────────────────────┐    │
+│  │  3. SEMANTIC MEMORY (HiRAG: Graph + Vector)             │    │
+│  │     LONG-TERM: Structured domain knowledge              │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     • Agent design patterns (ReAct, Supervisor, etc.)   │    │
+│  │     • Framework concepts (LangGraph, CrewAI)            │    │
+│  │     • Tool documentation & API schemas                  │    │
+│  │     • Best practices & anti-patterns                    │    │
+│  │     • Code examples & templates                         │    │
+│  │     • Research insights (Perplexity updates)            │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     Implementation: HiRAG (3-tier: GLOBAL/BRIDGE/LOCAL) │    │
+│  │     Storage: ChromaDB + Neo4j (cross-indexed)           │    │
+│  │     Updates: Manual seeding + episodic learning         │    │
+│  └────────────────────┬────────────────────────────────────┘    │
+│                       │ Encode Workflows →                       │
+│  ┌────────────────────▼────────────────────────────────────┐    │
+│  │  4. PROCEDURAL MEMORY (Code Templates & Workflows)      │    │
+│  │     LONG-TERM: "How-to" execution knowledge             │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     • Step-by-step agent implementation procedures      │    │
+│  │     • Code generation templates (by pattern)            │    │
+│  │     • Testing & validation workflows                    │    │
+│  │     • Debugging procedures (by error type)              │    │
+│  │     • Tool integration playbooks                        │    │
+│  │     • Deployment & configuration steps                  │    │
+│  │     ────────────────────────────────────────────        │    │
+│  │     Implementation: Python classes + JSON templates     │    │
+│  │     Storage: File system (fast lookup)                  │    │
+│  │     Usage: Direct execution by Coding/Testing Architects│    │
+│  └─────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────┘
+
+MEMORY FLOW:
+Working → Episodic (after task completion)
+Episodic → Semantic (pattern extraction & learning)
+Semantic → Procedural (template generation)
+All memories feed back into architects for improved performance
 ```
+
+#### 4.2.2 Memory Type Summary Table
+
+| Memory Type   | Functionality                                    | Implementation                               | Storage Duration | Update Frequency |
+|---------------|--------------------------------------------------|----------------------------------------------|------------------|------------------|
+| **Working**   | Current task context, active decisions, architect handoffs | Python class (in-memory) | Per-session | Continuous |
+| **Episodic**  | Complete task episodes: structure, outcome, errors, learnings | ChromaDB (vector) + Neo4j (graph) | Permanent | After each build |
+| **Semantic**  | Patterns, frameworks, best practices, documentation | HiRAG (ChromaDB + Neo4j) | Permanent | Manual + episodic learning |
+| **Procedural**| Step-by-step workflows, code templates, debugging playbooks | Python classes + JSON files | Permanent | When patterns stabilize |
+
+**Key Insight**: This complete memory hierarchy enables **true agentic learning**—the system doesn't just retrieve information, it learns from experience, adapts strategies, and improves performance over time[1].
+
+---
 
 #### 4.2.2 Working Memory Implementation
 
@@ -1815,6 +1883,154 @@ app = workflow.compile()
             'difficulty': procedure.difficulty
         }
 ```
+
+---
+
+#### 4.2.6 Memory Integration: How They Work Together
+
+> **🔄 The Complete Memory Learning Loop**: This section explains how all four memory types interact to create a self-improving system that learns from every agent-building experience[1][2].
+
+**Memory Flow in Action:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   COMPLETE MEMORY CYCLE                          │
+│                                                                  │
+│  USER REQUEST: "Build a research agent with web browsing"       │
+│         │                                                        │
+│         ▼                                                        │
+│  ┌──────────────────────────────────────────────────┐          │
+│  │  1. WORKING MEMORY (Start of Task)               │          │
+│  │     • Stores user request                        │          │
+│  │     • Retrieves relevant context from other tiers │          │
+│  └──────────────┬───────────────────────────────────┘          │
+│                 │                                                │
+│                 ▼                                                │
+│  ┌──────────────────────────────────────────────────┐          │
+│  │  2. EPISODIC MEMORY (Learning from Past)         │          │
+│  │     Query: "Similar research agent builds"       │          │
+│  │     Returns: 3 past successful episodes          │          │
+│  │     • ReAct pattern worked well (4/5 stars)      │          │
+│  │     • Tavily tool was effective                  │          │
+│  │     • Average build time: 4 minutes              │          │
+│  └──────────────┬───────────────────────────────────┘          │
+│                 │                                                │
+│                 ▼                                                │
+│  ┌──────────────────────────────────────────────────┐          │
+│  │  3. SEMANTIC MEMORY (Pattern Knowledge)          │          │
+│  │     HiRAG Query: "ReAct pattern + web tools"     │          │
+│  │     Returns:                                     │          │
+│  │     • GLOBAL: ReAct pattern definition          │          │
+│  │     • BRIDGE: LangGraph ReAct implementation     │          │
+│  │     • LOCAL: Code example with Tavily            │          │
+│  └──────────────┬───────────────────────────────────┘          │
+│                 │                                                │
+│                 ▼                                                │
+│  ┌──────────────────────────────────────────────────┐          │
+│  │  4. PROCEDURAL MEMORY (How-To)                   │          │
+│  │     Execute: "create_react_agent" procedure      │          │
+│  │     • Step 1: Define ReActState schema           │          │
+│  │     • Step 2: Create think/act nodes             │          │
+│  │     • Step 3: Add conditional routing            │          │
+│  │     • Step 4: Integrate tools                    │          │
+│  │     • Step 5: Compile and test                   │          │
+│  └──────────────┬───────────────────────────────────┘          │
+│                 │                                                │
+│                 ▼                                                │
+│  ┌──────────────────────────────────────────────────┐          │
+│  │  WORKING MEMORY (During Execution)               │          │
+│  │     • Tracks progress through steps              │          │
+│  │     • Stores intermediate code                   │          │
+│  │     • Collects errors/fixes                      │          │
+│  │     • Records architect decisions                │          │
+│  └──────────────┬───────────────────────────────────┘          │
+│                 │                                                │
+│                 ▼                                                │
+│  ┌──────────────────────────────────────────────────┐          │
+│  │  TASK COMPLETION: Agent Successfully Built       │          │
+│  │     • Code: 127 lines                            │          │
+│  │     • Time: 3.2 minutes                          │          │
+│  │     • Quality: 0.92                              │          │
+│  │     • User Feedback: 5/5 stars                   │          │
+│  └──────────────┬───────────────────────────────────┘          │
+│                 │                                                │
+│                 ▼                                                │
+│  ┌──────────────────────────────────────────────────┐          │
+│  │  LEARNING LOOP: Update Long-Term Memory          │          │
+│  │                                                  │          │
+│  │  → EPISODIC: Store complete episode             │          │
+│  │    • This becomes training data for future      │          │
+│  │                                                  │          │
+│  │  → SEMANTIC: Extract patterns if novel          │          │
+│  │    • "Tavily + ReAct = effective for research"  │          │
+│  │                                                  │          │
+│  │  → PROCEDURAL: Update procedure if improved     │          │
+│  │    • Add optimization to step 4                 │          │
+│  └──────────────────────────────────────────────────┘          │
+│                                                                  │
+│  NEXT BUILD: System is smarter, faster, better                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key Benefits of Complete Memory System:**
+
+1. **Compound Learning**: Each agent build improves the system
+   - Episode 1: Takes 10 minutes, learns basic patterns
+   - Episode 10: Takes 5 minutes, knows common pitfalls
+   - Episode 100: Takes 3 minutes, expert-level decisions
+
+2. **Adaptive Strategies**: Orchestrator learns what works
+   - Tracks success rates by pattern + use case
+   - Automatically chooses best approach
+   - Falls back to alternatives when primary fails
+
+3. **Fast Implementation**: Procedural memory speeds up coding
+   - Templates pre-filled from past successes
+   - Known-good configurations cached
+   - Error recovery procedures ready
+
+4. **Rich Context**: Working memory maintains coherence
+   - Architects share context seamlessly
+   - No redundant re-analysis
+   - Clean handoffs between stages
+
+**Memory Implementation Priority (MVP):**
+
+```python
+MVP_MEMORY_PRIORITY = {
+    'week_1': {
+        'critical': ['Semantic Memory (HiRAG)', 'Working Memory'],
+        'rationale': 'Need pattern retrieval and task context from day 1'
+    },
+    
+    'week_2': {
+        'high': ['Procedural Memory'],
+        'rationale': 'Code templates accelerate Coding Architect'
+    },
+    
+    'week_4': {
+        'medium': ['Episodic Memory (basic)'],
+        'rationale': 'Start collecting episodes for learning loop',
+        'scope': 'Store episodes, basic retrieval (no learning yet)'
+    },
+    
+    'post_mvp': {
+        'enhancement': ['Episodic Learning Loop'],
+        'rationale': 'Analyze episodes to improve strategies',
+        'timeline': 'Weeks 7-12 (Phase 4)'
+    }
+}
+```
+
+**Why This Order:**
+1. **Semantic** (Week 1): Pattern knowledge essential for any build
+2. **Procedural** (Week 2): Speeds up coding immediately
+3. **Episodic** (Week 4): Start collecting data (passive)
+4. **Learning Loop** (Post-MVP): Active learning requires analysis infrastructure
+
+This staged approach gets you productive fast while building toward true self-improvement[1][2].
+
+---
 
 ### 4.3 Reasoning Architecture
 
@@ -5342,54 +5558,183 @@ MULTIMODAL_STRATEGY = {
 
 #### 9.7.2 Phase 1: Foundation (Weeks 1-2)
 
-**Week 1: Memory & RAG Infrastructure**
+**Week 1: Complete Memory Architecture + RAG Infrastructure**
+
+> **🎯 Critical Foundation**: Week 1 establishes all 4 memory tiers (working, episodic, semantic, procedural) from the start, enabling continuous learning and self-improvement from day one[1][2].
 
 ```python
 WEEK_1_DELIVERABLES = {
-    'priority_1': 'HiRAG System (80% of week)',
-    'tasks': [
-        {
-            'task': 'Setup Neo4j Docker container',
-            'time': '2 hours',
-            'output': 'Running Neo4j on localhost:7687'
-        },
-        {
-            'task': 'Setup ChromaDB embedded',
-            'time': '2 hours',
-            'output': 'ChromaDB client initialized, collections created'
-        },
-        {
-            'task': 'Implement 3-tier HiRAG retrieval',
-            'time': '16 hours',
-            'sub_tasks': [
-                'Global tier (Neo4j Cypher queries)',
-                'Bridge tier (Neo4j + ChromaDB hybrid)',
-                'Local tier (ChromaDB similarity search)',
-                'Cross-indexing logic'
-            ],
-            'output': 'Can query all 3 tiers successfully'
-        },
-        {
-            'task': 'Create initial seed data',
-            'time': '8 hours',
-            'output': '~50 nodes (patterns, frameworks, tools), ~100 relationships'
-        },
-        {
-            'task': 'Test queries',
-            'time': '4 hours',
-            'output': 'Unit tests for all 3 HiRAG tiers'
-        }
-    ],
+    'priority_1': 'Complete 4-Tier Memory System (85% of week)',
     
-    'priority_2': 'FastAPI Backend Scaffold (20% of week)',
-    'tasks_p2': [
+    # ========================================
+    # SEMANTIC MEMORY: HiRAG (40% of week)
+    # ========================================
+    'semantic_memory': {
+        'rationale': 'Pattern knowledge essential for any build',
+        'tasks': [
+            {
+                'task': 'Setup Neo4j Docker container',
+                'time': '2 hours',
+                'output': 'Running Neo4j on localhost:7687'
+            },
+            {
+                'task': 'Setup ChromaDB embedded',
+                'time': '2 hours',
+                'output': 'ChromaDB client initialized, collections created'
+            },
+            {
+                'task': 'Implement 3-tier HiRAG retrieval',
+                'time': '12 hours',
+                'sub_tasks': [
+                    'Global tier (Neo4j Cypher queries)',
+                    'Bridge tier (Neo4j + ChromaDB hybrid)',
+                    'Local tier (ChromaDB similarity search)',
+                    'Cross-indexing logic'
+                ],
+                'output': 'Can query all 3 tiers successfully'
+            },
+            {
+                'task': 'Create initial seed data',
+                'time': '6 hours',
+                'output': '~50 nodes (patterns, frameworks, tools), ~100 relationships'
+            }
+        ]
+    },
+    
+    # ========================================
+    # WORKING MEMORY: Task Context (15% of week)
+    # ========================================
+    'working_memory': {
+        'rationale': 'Architects need shared context for coherence',
+        'tasks': [
+            {
+                'task': 'Implement WorkingMemory class',
+                'time': '4 hours',
+                'features': [
+                    'In-memory storage (dict + deque)',
+                    'Smart compaction (keep context under 12K tokens)',
+                    'Relevance tracking (LRU for each item)',
+                    'Architect handoff support'
+                ],
+                'output': 'WorkingMemory class with add/get/compact methods'
+            },
+            {
+                'task': 'Unit tests for working memory',
+                'time': '2 hours',
+                'output': 'Test compaction, retrieval, relevance scoring'
+            }
+        ]
+    },
+    
+    # ========================================
+    # PROCEDURAL MEMORY: Code Templates (20% of week)
+    # ========================================
+    'procedural_memory': {
+        'rationale': 'Speed up Coding Architect with known-good templates',
+        'tasks': [
+            {
+                'task': 'Design ProcedureLibrary schema',
+                'time': '3 hours',
+                'output': 'JSON structure for procedures (steps, templates, metadata)'
+            },
+            {
+                'task': 'Create 5 starter procedures',
+                'time': '5 hours',
+                'procedures': [
+                    'create_react_agent (LangGraph)',
+                    'create_supervisor_agent (CrewAI)',
+                    'setup_agentic_rag',
+                    'add_tool_to_agent',
+                    'implement_human_in_loop'
+                ],
+                'output': '5 JSON files with step-by-step templates'
+            }
+        ]
+    },
+    
+    # ========================================
+    # EPISODIC MEMORY: Basic Recording (10% of week)
+    # ========================================
+    'episodic_memory': {
+        'rationale': 'Start collecting episodes NOW (learning loop comes later)',
+        'scope': 'PASSIVE COLLECTION ONLY - No analysis yet',
+        'tasks': [
+            {
+                'task': 'Implement Episode class',
+                'time': '3 hours',
+                'features': [
+                    'Store: request, plan, code, outcome, errors, user_rating',
+                    'Save to ChromaDB (vectorized summary)',
+                    'Save to Neo4j (graph: episode → patterns → tools)'
+                ],
+                'output': 'Can store complete episode with metadata'
+            },
+            {
+                'task': 'Basic episode retrieval',
+                'time': '1 hour',
+                'features': [
+                    'Query by similarity (ChromaDB)',
+                    'Query by pattern/framework (Neo4j)'
+                ],
+                'output': 'Can retrieve past similar episodes'
+            }
+        ],
+        'note': 'Active learning loop (analyze episodes to improve) → Phase 4 (Weeks 7-12)'
+    },
+    
+    # ========================================
+    # INTEGRATION & TESTING (15% of week)
+    # ========================================
+    'integration': {
+        'tasks': [
+            {
+                'task': 'Memory API facade',
+                'time': '3 hours',
+                'output': 'Single MemoryManager class that unifies all 4 tiers'
+            },
+            {
+                'task': 'End-to-end test',
+                'time': '3 hours',
+                'test': 'Simulate agent build using all memory types',
+                'output': 'Verify: working context, episodic retrieval, semantic query, procedural execution'
+            }
+        ]
+    },
+    
+    # ========================================
+    # BACKEND SCAFFOLD (15% of week)
+    # ========================================
+    'priority_2': 'FastAPI Backend Scaffold',
+    'backend_tasks': [
         'Project structure setup',
         'Basic API routes (/api/agents/build, /api/memory/query)',
-        'HiRAG integration',
+        'Memory integration endpoints',
         'Health check endpoint'
     ]
 }
+
+# Why This Week 1 Structure?
+WEEK_1_RATIONALE = {
+    'semantic_first': 'Need pattern knowledge for any build',
+    'working_immediate': 'Architects need shared context from first request',
+    'procedural_week1': 'Templates accelerate Coding Architect immediately',
+    'episodic_passive': 'Start collecting data NOW (even if learning comes later)',
+    'integration_critical': 'All 4 tiers working together = compound learning'
+}
+
+# Post-MVP Enhancement (Weeks 7-12)
+EPISODIC_LEARNING_LOOP = {
+    'when': 'Phase 4 (after MVP validation)',
+    'features': [
+        'Analyze episodes to identify success patterns',
+        'Auto-update procedural templates from high-rated episodes',
+        'Adaptive strategy selection based on episode outcomes',
+        'Self-improvement metrics dashboard'
+    ],
+    'rationale': 'Get data collection running early, analysis infrastructure later'
+}
 ```
+
 
 **Week 2: Orchestrator + Analyzer Architects (LangGraph)**
 
