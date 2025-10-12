@@ -1,0 +1,112 @@
+# Tool configurations
+
+tools:
+  file_operations:
+    read:
+      name: "ReadTool"
+      description: "Read file contents"
+      max_file_size: "10MB"
+      supported_encodings: ["utf-8", "ascii", "latin-1"]
+    
+    write:
+      name: "WriteTool"
+      description: "Write content to files"
+      backup_on_overwrite: true
+      create_directories: true
+    
+    search:
+      name: "SearchTool"
+      description: "Search files and directories"
+      max_results: 100
+      include_hidden: false
+    
+    watch:
+      name: "WatchTool"
+      description: "Watch file system changes"
+      debounce_ms: 500
+
+  code_analysis:
+    parser:
+      name: "ParserTool"
+      description: "Parse code using Tree-sitter"
+      supported_languages:
+        - "python"
+        - "javascript"
+        - "typescript"
+        - "java"
+        - "cpp"
+    
+    linter:
+      name: "LinterTool"
+      description: "Lint code for errors and style issues"
+      tools:
+        python: ["pylint", "flake8", "mypy"]
+        javascript: ["eslint"]
+        typescript: ["tslint"]
+    
+    formatter:
+      name: "FormatterTool"
+      description: "Format code according to style guides"
+      tools:
+        python: ["black", "autopep8"]
+        javascript: ["prettier"]
+        typescript: ["prettier"]
+    
+    metrics:
+      name: "MetricsTool"
+      description: "Calculate code metrics"
+      metrics:
+        - "cyclomatic_complexity"
+        - "lines_of_code"
+        - "maintainability_index"
+
+  git_operations:
+    commit:
+      name: "CommitTool"
+      description: "Create Git commits"
+      auto_stage: true
+      conventional_commits: true
+    
+    diff:
+      name: "DiffTool"
+      description: "Show Git differences"
+      context_lines: 3
+      ignore_whitespace: false
+    
+    branch:
+      name: "BranchTool"
+      description: "Manage Git branches"
+      auto_checkout: false
+
+  execution:
+    runner:
+      name: "RunnerTool"
+      description: "Execute code safely"
+      timeout: 30
+      memory_limit: "256MB"
+    
+    testing:
+      name: "TestingTool"
+      description: "Run tests"
+      frameworks:
+        python: ["pytest", "unittest"]
+        javascript: ["jest", "mocha"]
+    
+    sandbox:
+      name: "SandboxTool"
+      description: "Execute code in sandbox"
+      container_image: "python:3.10-slim"
+      network_access: false
+
+  web_operations:
+    search:
+      name: "WebSearchTool"
+      description: "Search the web"
+      search_engine: "duckduckgo"
+      max_results: 10
+    
+    fetch:
+      name: "WebFetchTool"
+      description: "Fetch web content"
+      timeout: 10
+      max_size: "1MB"

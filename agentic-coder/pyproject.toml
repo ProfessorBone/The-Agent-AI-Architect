@@ -1,0 +1,93 @@
+[tool.poetry]
+name = "agentic-coder"
+version = "0.1.0"
+description = "A comprehensive agentic AI coding system with multi-agent orchestration, cognitive architecture, and Graph RAG knowledge management"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+license = "MIT"
+packages = [{include = "agentic_coder", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+# Core dependencies
+typer = "^0.9.0"
+rich = "^13.0.0"
+pydantic = "^2.0.0"
+pydantic-settings = "^2.0.0"
+# LLM & AI
+openai = "^1.0.0"
+langchain = "^0.1.0"
+langchain-community = "^0.0.20"
+langgraph = "^0.0.20"
+# Database & Vector stores
+neo4j = "^5.0.0"
+chromadb = "^0.4.0"
+# Async & concurrency
+asyncio = "*"
+aiofiles = "^23.0.0"
+# Web & HTTP
+httpx = "^0.25.0"
+fastapi = "^0.104.0"
+uvicorn = "^0.24.0"
+websockets = "^12.0"
+# Code analysis
+tree-sitter = "^0.20.0"
+tree-sitter-python = "^0.20.0"
+ast = "*"
+# Git operations
+gitpython = "^3.1.0"
+# Configuration
+pyyaml = "^6.0"
+python-dotenv = "^1.0.0"
+# Utilities
+click = "^8.0.0"
+tqdm = "^4.66.0"
+pathlib = "*"
+dataclasses = "*"
+
+[tool.poetry.group.dev.dependencies]
+# Testing
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.0"
+# Code quality
+black = "^23.0.0"
+isort = "^5.12.0"
+flake8 = "^6.0.0"
+mypy = "^1.5.0"
+pre-commit = "^3.4.0"
+# Documentation
+mkdocs = "^1.5.0"
+mkdocs-material = "^9.0.0"
+# Development tools
+ipython = "^8.15.0"
+jupyter = "^1.0.0"
+
+[tool.poetry.scripts]
+agentic-coder = "agentic_coder.__main__:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=agentic_coder --cov-report=term-missing"
+testpaths = ["tests"]

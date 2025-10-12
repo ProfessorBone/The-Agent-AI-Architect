@@ -1,0 +1,90 @@
+# Model configurations for different LLMs
+
+models:
+  gpt-4:
+    provider: "openai"
+    max_tokens: 8192
+    temperature: 0.7
+    top_p: 0.9
+    frequency_penalty: 0.0
+    presence_penalty: 0.0
+    capabilities:
+      - "code_generation"
+      - "code_analysis"
+      - "planning"
+      - "reasoning"
+    cost_per_1k_tokens:
+      input: 0.03
+      output: 0.06
+
+  gpt-3.5-turbo:
+    provider: "openai"
+    max_tokens: 4096
+    temperature: 0.7
+    top_p: 0.9
+    frequency_penalty: 0.0
+    presence_penalty: 0.0
+    capabilities:
+      - "code_generation"
+      - "code_analysis"
+    cost_per_1k_tokens:
+      input: 0.0015
+      output: 0.002
+
+  codellama-7b:
+    provider: "vllm"
+    model_path: "codellama/CodeLlama-7b-Python-hf"
+    max_tokens: 2048
+    temperature: 0.3
+    top_p: 0.8
+    capabilities:
+      - "code_generation"
+    local: true
+
+  codellama-13b:
+    provider: "vllm"
+    model_path: "codellama/CodeLlama-13b-Python-hf"
+    max_tokens: 2048
+    temperature: 0.3
+    top_p: 0.8
+    capabilities:
+      - "code_generation"
+      - "code_analysis"
+    local: true
+
+  deepseek-coder:
+    provider: "vllm"
+    model_path: "deepseek-ai/deepseek-coder-6.7b-instruct"
+    max_tokens: 2048
+    temperature: 0.2
+    top_p: 0.8
+    capabilities:
+      - "code_generation"
+      - "code_analysis"
+    local: true
+
+# Agent-specific model preferences
+agent_models:
+  orchestrator:
+    primary: "gpt-4"
+    fallback: "gpt-3.5-turbo"
+  
+  analyzer:
+    primary: "gpt-4"
+    fallback: "codellama-13b"
+  
+  planner:
+    primary: "gpt-4"
+    fallback: "gpt-3.5-turbo"
+  
+  coder:
+    primary: "codellama-13b"
+    fallback: "gpt-3.5-turbo"
+  
+  tester:
+    primary: "gpt-3.5-turbo"
+    fallback: "codellama-7b"
+  
+  reviewer:
+    primary: "gpt-4"
+    fallback: "gpt-3.5-turbo"

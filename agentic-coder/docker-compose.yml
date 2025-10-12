@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.15
+    container_name: agentic-coder-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/agentic_coder_password
+      - NEO4J_PLUGINS=["graph-data-science"]
+      - NEO4J_dbms_security_procedures_unrestricted=gds.*
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_conf:/conf
+    networks:
+      - agentic-coder
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: agentic-coder-chroma
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+    networks:
+      - agentic-coder
+
+  agentic-coder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: agentic-coder-app
+    ports:
+      - "8080:8080"
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_PASSWORD=agentic_coder_password
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    depends_on:
+      - neo4j
+      - chroma
+    networks:
+      - agentic-coder
+
+  agentic-coder-gpu:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.gpu
+    container_name: agentic-coder-gpu
+    ports:
+      - "8081:8080"
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_PASSWORD=agentic_coder_password
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    depends_on:
+      - neo4j
+      - chroma
+    runtime: nvidia
+    networks:
+      - agentic-coder
+    profiles:
+      - gpu
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_conf:
+  chroma_data:
+
+networks:
+  agentic-coder:
+    driver: bridge

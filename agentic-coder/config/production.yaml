@@ -1,0 +1,44 @@
+# Production configuration for agentic-coder
+# Optimized for production deployment
+
+# System settings
+system:
+  debug: false
+  log_level: "WARNING"
+
+# Agent configuration - optimized for production
+agents:
+  max_concurrent: 10
+  default_timeout: 600
+  max_iterations: 20
+
+# Memory configuration - larger for production
+memory:
+  working_memory_size: 100
+  episodic_memory_size: 5000
+  semantic_memory_size: 50000
+
+# LLM configuration - best model for production
+llm:
+  default_model: "gpt-4"
+  max_tokens: 8192
+  temperature: 0.3
+
+# Production specific settings
+production:
+  enable_monitoring: true
+  enable_metrics: true
+  enable_caching: true
+  cache_ttl: 3600
+
+# Security settings
+security:
+  strict_mode: true
+  enable_audit_log: true
+  max_file_size: "5MB"
+  
+# Performance settings
+performance:
+  connection_pool_size: 20
+  batch_size: 50
+  max_retries: 3

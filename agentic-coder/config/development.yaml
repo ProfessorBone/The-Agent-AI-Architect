@@ -1,0 +1,36 @@
+# Development configuration for agentic-coder
+# Inherits from default.yaml and overrides specific settings
+
+# System settings
+system:
+  debug: true
+  log_level: "DEBUG"
+
+# Agent configuration - reduced for development
+agents:
+  max_concurrent: 3
+  default_timeout: 180
+  max_iterations: 5
+
+# Memory configuration - smaller for development
+memory:
+  working_memory_size: 20
+  episodic_memory_size: 500
+  semantic_memory_size: 5000
+
+# LLM configuration - faster model for development
+llm:
+  default_model: "gpt-3.5-turbo"
+  max_tokens: 2048
+  temperature: 0.5
+
+# Development specific settings
+development:
+  auto_reload: true
+  enable_profiling: true
+  mock_external_services: true
+  
+# Tool configuration - more permissive for development
+tools:
+  sandbox_mode: false
+  enable_web_search: true
