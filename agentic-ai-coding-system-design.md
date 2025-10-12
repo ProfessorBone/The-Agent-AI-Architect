@@ -5154,7 +5154,7 @@ MCP_INTEGRATION = {
     
     'implementation_strategy': {
         'phase_1_mvp': 'Internal tools only (HiRAG, file ops, git)',
-        'phase_2': 'Expose tools via MCP protocol',
+        'phase_2': 'Expose tools via MCP protocol + Perplexity research integration',
         'phase_3': 'Consume external MCP tools (Brave search, GitHub, etc.)'
     },
     
@@ -5162,6 +5162,47 @@ MCP_INTEGRATION = {
         'interoperability': 'Agents can use tools from other MCP-compliant systems',
         'extensibility': 'Easy to add new tools without code changes',
         'standardization': 'Follow industry standards for tool calling'
+    },
+    
+    'external_mcp_servers': {
+        'perplexity': {
+            'name': 'Perplexity Sonar API MCP Server',
+            'repository': 'https://github.com/ppl-ai/modelcontextprotocol',
+            'purpose': 'Real-time web-wide research for architects',
+            'phase': 'Phase 2 (Weeks 7-12)',
+            'priority': 'HIGH',
+            'use_cases': [
+                'Analyzer Architect: Research latest patterns and best practices',
+                'Planning Architect: Query framework-specific implementation guides',
+                'Reviewing Architect: Verify against current industry standards',
+                'All Architects: Access to real-time documentation and examples'
+            ],
+            'integration': '''
+            # Install Perplexity MCP Server
+            npm install @ppl-ai/mcp-server-perplexity
+            
+            # Configure in MCP client
+            {
+              "mcpServers": {
+                "perplexity": {
+                  "command": "npx",
+                  "args": ["@ppl-ai/mcp-server-perplexity"],
+                  "env": {
+                    "PERPLEXITY_API_KEY": "pplx-..."
+                  }
+                }
+              }
+            }
+            ''',
+            'cost': 'Perplexity API: ~$0.20-$5.00 per 1M tokens (Sonar pricing)',
+            'rationale': '''
+            Perplexity provides real-time, citation-backed research that:
+            - Keeps architects updated with latest framework versions
+            - Reduces HiRAG seed data maintenance burden
+            - Complements HiRAG: HiRAG = internal knowledge, Perplexity = external research
+            - Enables architects to answer "what's the current best practice for X in 2025?"
+            '''
+        }
     },
     
     'example_mcp_tool': '''
@@ -5179,6 +5220,25 @@ MCP_INTEGRATION = {
             dict: {patterns: [...], confidence: float}
         """
         return hirag.query_global(query, {'use_case': use_case})
+    
+    # Use external Perplexity MCP tool (Phase 2)
+    @mcp_client_tool
+    async def research_latest_patterns(query: str, domain: str) -> dict:
+        """
+        Research latest patterns using Perplexity Sonar API
+        
+        Args:
+            query: Research query (e.g., "LangGraph best practices 2025")
+            domain: Domain context (e.g., "agent_orchestration", "error_handling")
+        
+        Returns:
+            dict: {answer: str, citations: [...], sources: [...]}
+        """
+        return await mcp_client.call_tool(
+            server="perplexity",
+            tool="search",
+            arguments={"query": query, "search_recency_filter": "month"}
+        )
     '''
 }
 ```
@@ -5656,6 +5716,19 @@ PHASE_5_ENHANCEMENTS = {
     'focus': 'Add advanced capabilities based on real needs',
     
     'features': {
+        'perplexity_integration': {
+            'why': 'Real-time web research for architects',
+            'time': '1 week',
+            'benefit': 'Access to latest patterns, docs, and best practices',
+            'implementation': [
+                'Install Perplexity MCP server',
+                'Integrate with Analyzer Architect (research patterns)',
+                'Integrate with Planning Architect (query framework docs)',
+                'Integrate with Reviewing Architect (verify against standards)'
+            ],
+            'priority': 'HIGH'
+        },
+        
         'agentops_integration': {
             'why': 'Better observability than LangSmith free tier',
             'time': '1 week',
@@ -5674,10 +5747,10 @@ PHASE_5_ENHANCEMENTS = {
             'benefit': 'Can understand visual inputs'
         },
         
-        'mcp_protocol': {
-            'why': 'Interoperability with other tools',
+        'mcp_protocol_expansion': {
+            'why': 'Interoperability with other tools (GitHub, Brave Search)',
             'time': '1 week',
-            'benefit': 'Can use external MCP tools'
+            'benefit': 'Can use external MCP tools beyond Perplexity'
         },
         
         'advanced_testing': {
@@ -5814,6 +5887,7 @@ agent-ai-architect/
 | **Graph Memory** | Neo4j | Structural knowledge (GLOBAL/BRIDGE) | CRITICAL |
 | **Local Models** | Ollama | Cost-free, private inference | HIGH |
 | **API Fallback** | OpenAI/Anthropic/DeepSeek | Complex reasoning when needed | MEDIUM |
+| **Research Tool** | Perplexity Sonar MCP | Real-time web research for architects | MEDIUM (Phase 2) |
 | **Backend** | FastAPI + AsyncIO | Modern async API | CRITICAL |
 | **UI** | VS Code Extension (TypeScript) | Native developer workflow | HIGH |
 | **Observability** | LangSmith (MVP), AgentOps (later) | Debugging and tracing | HIGH |
@@ -5827,6 +5901,7 @@ agent-ai-architect/
 - ✅ **Production-grade foundation** (LangGraph for complex workflows)
 - ✅ **Rapid prototyping** (CrewAI for simple collaborations)
 - ✅ **Specialized memory** (HiRAG for agent-building knowledge)
+- ✅ **Real-time research** (Perplexity MCP for latest best practices)
 - ✅ **Cost optimization** (local-first with API fallback)
 - ✅ **Future-proof** (MCP, A2A, multi-modal ready)
 - ✅ **Realistic timeline** (6 weeks to MVP, 6 months to mature)
