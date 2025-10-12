@@ -1148,6 +1148,345 @@ prompt_feedback_interface = {
 
 ---
 
+#### 3.3.1 Prompt Effectiveness Evaluation Pipeline
+
+> **🔬 Critical Subsystem**: This pipeline transforms the Prompt Engineer from a static template manager into a true learning system. Every prompt is tracked, evaluated, and improved based on measurable outcomes[1].
+
+**Complete Evaluation Flow:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              PROMPT EFFECTIVENESS EVALUATION PIPELINE            │
+│                                                                  │
+│  STEP 1: PROMPT CREATION                                        │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Prompt Engineer crafts optimized prompt              │      │
+│  │ • Base template + context + examples + constraints   │      │
+│  │ • Store: prompt_id, architect, task_type, metadata   │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 2: ARCHITECT EXECUTION                                    │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Target architect uses prompt to generate output      │      │
+│  │ • Planner → architectural blueprint                  │      │
+│  │ • Coder → agent implementation code                  │      │
+│  │ • Tester → test suite and validation                 │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 3: AUTOMATED EVALUATION                                   │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Multiple evaluators assess output quality:          │      │
+│  │                                                      │      │
+│  │ A. Code Quality Analyzer                            │      │
+│  │    • Syntax correctness: Pass/Fail                  │      │
+│  │    • Import resolution: 0-100%                      │      │
+│  │    • Code structure score: 0-1.0                    │      │
+│  │    • Documentation coverage: 0-100%                 │      │
+│  │                                                      │      │
+│  │ B. Test Results Analyzer                            │      │
+│  │    • Unit test pass rate: 0-100%                    │      │
+│  │    • Integration test success: 0-100%               │      │
+│  │    • Edge case coverage: 0-100%                     │      │
+│  │    • Test coverage: 0-100%                          │      │
+│  │                                                      │      │
+│  │ C. Reviewer Feedback Analyzer                       │      │
+│  │    • Best practice violations: Count                │      │
+│  │    • Security issues: Count                         │      │
+│  │    • Performance concerns: Count                    │      │
+│  │    • Overall review score: 0-1.0                    │      │
+│  │                                                      │      │
+│  │ D. Token Efficiency Analyzer                        │      │
+│  │    • Output tokens / Prompt tokens ratio            │      │
+│  │    • Cost per quality point: $ / score              │      │
+│  │    • Context relevance: 0-1.0                       │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 4: HUMAN FEEDBACK COLLECTION                              │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Developer provides qualitative feedback:             │      │
+│  │                                                      │      │
+│  │ CLI Interface:                                       │      │
+│  │   $ agent-architect rate-build <build_id>           │      │
+│  │   Rating (1-5): 5                                   │      │
+│  │   Helpful? (y/n): y                                 │      │
+│  │   Comments: "Excellent code structure, clear docs"  │      │
+│  │                                                      │      │
+│  │ VS Code Extension:                                   │      │
+│  │   ⭐⭐⭐⭐⭐ [Rate this build]                              │      │
+│  │   💬 "Prompts included perfect examples"            │      │
+│  │   👍 Approve   👎 Reject   🔄 Revise                │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 5: COMPOSITE SCORING                                      │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Calculate prompt_effectiveness_score:                │      │
+│  │                                                      │      │
+│  │ score = (                                           │      │
+│  │   0.30 * code_quality_score +                       │      │
+│  │   0.25 * test_pass_rate +                           │      │
+│  │   0.20 * review_score +                             │      │
+│  │   0.15 * user_rating / 5 +                          │      │
+│  │   0.10 * token_efficiency                           │      │
+│  │ )                                                    │      │
+│  │                                                      │      │
+│  │ Example:                                             │      │
+│  │   code_quality = 0.92                               │      │
+│  │   test_pass = 0.95                                  │      │
+│  │   review = 0.88                                     │      │
+│  │   user_rating = 5.0                                 │      │
+│  │   token_eff = 0.85                                  │      │
+│  │   → effectiveness = 0.914 (EXCELLENT)               │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 6: EPISODIC MEMORY STORAGE                                │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Store prompt outcome in episodic memory:             │      │
+│  │                                                      │      │
+│  │ Episode {                                            │      │
+│  │   prompt_id: "prompt_coder_langgraph_001",          │      │
+│  │   architect: "coder",                               │      │
+│  │   task_type: "react_agent_generation",              │      │
+│  │   effectiveness_score: 0.914,                       │      │
+│  │   code_quality: 0.92,                               │      │
+│  │   test_pass_rate: 0.95,                             │      │
+│  │   review_score: 0.88,                               │      │
+│  │   user_rating: 5.0,                                 │      │
+│  │   token_efficiency: 0.85,                           │      │
+│  │   timestamp: "2025-10-12T14:30:00Z",                │      │
+│  │   context: {framework: "langgraph", complexity: "medium"} │      │
+│  │ }                                                    │      │
+│  │                                                      │      │
+│  │ Update Prompt Lineage Graph (Neo4j):                │      │
+│  │   (Prompt)-[USED_IN]->(Build)                       │      │
+│  │   (Build)-[RESULTED_IN]->(Outcome)                  │      │
+│  │   (Outcome)-[HAS_SCORE]->(0.914)                    │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 7: META-REASONING & LEARNING                              │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Prompt Engineer analyzes WHY prompt worked:         │      │
+│  │                                                      │      │
+│  │ Success Analysis (score >= 0.85):                   │      │
+│  │   • Extract patterns from high-scoring prompts      │      │
+│  │   • Identify common structural elements             │      │
+│  │   • Correlate context features with success         │      │
+│  │   • Update procedural memory templates              │      │
+│  │                                                      │      │
+│  │ Insights Example:                                    │      │
+│  │   "LangGraph prompts with 2-3 concrete examples     │      │
+│  │    outperform those with only instructions by 23%.  │      │
+│  │    Key pattern: examples should show StateGraph     │      │
+│  │    setup + conditional_edges + compile() call."     │      │
+│  │                                                      │      │
+│  │ Failure Analysis (score < 0.65):                    │      │
+│  │   • Diagnose what went wrong                        │      │
+│  │   • Missing context? Poor examples? Unclear constraints? │      │
+│  │   • Generate improvement suggestions                │      │
+│  │   • Create variant prompt to A/B test              │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 8: A/B TEST RANKING UPDATE                                │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ If A/B testing enabled:                              │      │
+│  │                                                      │      │
+│  │ Compare variants:                                    │      │
+│  │   Variant A (original): 0.78 avg (10 uses)          │      │
+│  │   Variant B (new): 0.914 avg (1 use)                │      │
+│  │                                                      │      │
+│  │ Statistical confidence calculation:                  │      │
+│  │   • Need more samples for B                         │      │
+│  │   • Continue testing both variants                  │      │
+│  │   • After 10 uses each, promote winner              │      │
+│  │                                                      │      │
+│  │ When confident (p < 0.05):                          │      │
+│  │   → Promote Variant B as new default                │      │
+│  │   → Archive Variant A as "deprecated"               │      │
+│  │   → Update all future coder prompts                 │      │
+│  └────────────────────┬─────────────────────────────────┘      │
+│                       │                                          │
+│                       ▼                                          │
+│  STEP 9: CURRICULUM UPDATE                                      │
+│  ┌──────────────────────────────────────────────────────┐      │
+│  │ Aggregate learnings into curriculum:                 │      │
+│  │                                                      │      │
+│  │ New Lesson Learned:                                  │      │
+│  │   "For LangGraph ReAct agents, include:             │      │
+│  │    1. StateGraph TypedDict example                  │      │
+│  │    2. Conditional edge routing pattern              │      │
+│  │    3. compile() call reminder (common gotcha)       │      │
+│  │    4. Tool integration via ToolNode                 │      │
+│  │                                                      │      │
+│  │    This structure yields 0.91+ effectiveness."      │      │
+│  │                                                      │      │
+│  │ Add to prompt engineering curriculum:                │      │
+│  │   Advanced → "Framework-specific example selection" │      │
+│  └──────────────────────────────────────────────────────┘      │
+│                                                                  │
+│  CONTINUOUS IMPROVEMENT LOOP ↻                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Implementation:**
+
+```python
+class PromptEffectivenessEvaluator:
+    """
+    Complete evaluation pipeline for prompt effectiveness
+    """
+    
+    def __init__(self):
+        self.code_quality_analyzer = CodeQualityAnalyzer()
+        self.test_analyzer = TestResultsAnalyzer()
+        self.reviewer_analyzer = ReviewFeedbackAnalyzer()
+        self.token_analyzer = TokenEfficiencyAnalyzer()
+        self.human_feedback_collector = HumanFeedbackCollector()
+        self.meta_reasoner = MetaReasoningEngine()
+        self.episodic_memory = EpisodicMemory()
+        self.ab_tester = ABTestManager()
+        
+    async def evaluate_prompt(
+        self,
+        prompt_id: str,
+        architect: str,
+        output: dict,
+        build_metadata: dict
+    ) -> PromptEvaluation:
+        """
+        Run complete evaluation pipeline
+        """
+        # === AUTOMATED EVALUATION ===
+        code_quality = await self.code_quality_analyzer.analyze(
+            code=output.get('code'),
+            metrics=['syntax', 'imports', 'structure', 'documentation']
+        )
+        
+        test_results = await self.test_analyzer.analyze(
+            test_output=output.get('test_results'),
+            metrics=['unit_pass_rate', 'integration_pass_rate', 'coverage']
+        )
+        
+        review_feedback = await self.reviewer_analyzer.analyze(
+            review=output.get('review'),
+            metrics=['violations', 'security_issues', 'review_score']
+        )
+        
+        token_efficiency = await self.token_analyzer.analyze(
+            prompt_tokens=build_metadata['prompt_tokens'],
+            output_tokens=build_metadata['output_tokens'],
+            context_relevance=build_metadata.get('context_relevance', 0.8)
+        )
+        
+        # === HUMAN FEEDBACK ===
+        human_feedback = await self.human_feedback_collector.collect(
+            build_id=build_metadata['build_id'],
+            timeout=300,  # Wait up to 5 minutes for user rating
+            default_if_timeout={'rating': None, 'helpful': None}
+        )
+        
+        # === COMPOSITE SCORING ===
+        effectiveness_score = (
+            0.30 * code_quality.overall_score +
+            0.25 * test_results.pass_rate +
+            0.20 * review_feedback.score +
+            0.15 * (human_feedback.rating / 5.0 if human_feedback.rating else 0.7) +
+            0.10 * token_efficiency.score
+        )
+        
+        # === EPISODIC MEMORY STORAGE ===
+        episode = {
+            'prompt_id': prompt_id,
+            'architect': architect,
+            'task_type': build_metadata['task_type'],
+            'effectiveness_score': effectiveness_score,
+            'code_quality': code_quality.overall_score,
+            'test_pass_rate': test_results.pass_rate,
+            'review_score': review_feedback.score,
+            'user_rating': human_feedback.rating,
+            'token_efficiency': token_efficiency.score,
+            'timestamp': datetime.now(timezone.utc),
+            'context': build_metadata.get('context', {})
+        }
+        
+        await self.episodic_memory.store_episode(episode)
+        
+        # Update Neo4j lineage graph
+        await self.update_lineage_graph(
+            prompt_id=prompt_id,
+            build_id=build_metadata['build_id'],
+            effectiveness_score=effectiveness_score
+        )
+        
+        # === META-REASONING ===
+        if effectiveness_score >= 0.85:
+            insights = await self.meta_reasoner.analyze_success(
+                prompt_id=prompt_id,
+                episode=episode,
+                analysis_focus=['structure', 'examples', 'constraints', 'context']
+            )
+            await self.store_insights(insights)
+            
+        elif effectiveness_score < 0.65:
+            diagnosis = await self.meta_reasoner.diagnose_failure(
+                prompt_id=prompt_id,
+                episode=episode,
+                check_for=['missing_context', 'poor_examples', 'unclear_constraints']
+            )
+            improvement_suggestions = await self.generate_improvements(diagnosis)
+            await self.create_variant_prompt(prompt_id, improvement_suggestions)
+        
+        # === A/B TESTING UPDATE ===
+        if self.ab_tester.is_active(prompt_id):
+            await self.ab_tester.record_result(
+                prompt_id=prompt_id,
+                score=effectiveness_score,
+                metadata=build_metadata
+            )
+            
+            if await self.ab_tester.has_statistical_confidence(prompt_id):
+                winner = await self.ab_tester.determine_winner(prompt_id)
+                await self.promote_winner(winner)
+        
+        # === CURRICULUM UPDATE ===
+        if effectiveness_score >= 0.90:
+            lesson = await self.extract_lesson(prompt_id, episode, insights)
+            await self.update_curriculum(lesson)
+        
+        return PromptEvaluation(
+            prompt_id=prompt_id,
+            effectiveness_score=effectiveness_score,
+            breakdown={
+                'code_quality': code_quality.overall_score,
+                'test_pass_rate': test_results.pass_rate,
+                'review_score': review_feedback.score,
+                'user_rating': human_feedback.rating,
+                'token_efficiency': token_efficiency.score
+            },
+            insights=insights if effectiveness_score >= 0.85 else None,
+            diagnosis=diagnosis if effectiveness_score < 0.65 else None,
+            recommendation='PROMOTE' if effectiveness_score >= 0.90 else
+                          'KEEP_TESTING' if 0.75 <= effectiveness_score < 0.90 else
+                          'REVISE'
+        )
+```
+
+**Key Benefits:**
+
+1. **Transparent**: Every prompt tracked from creation → outcome
+2. **Multi-dimensional**: Quality, tests, reviews, human feedback, efficiency
+3. **Automated**: Most evaluation happens without human intervention
+4. **Learning-driven**: Meta-reasoning extracts "why" patterns work
+5. **Statistically rigorous**: A/B testing with confidence intervals
+6. **Curriculum-building**: Best practices automatically captured
+
+---
+
 ### 3.4 Planning Architect
 
 **Role:** Strategic system design and architectural blueprint creation
