@@ -1617,256 +1617,1007 @@ class ExperienceReplayLearning:
 
 ---
 
-## 5. Graph RAG System
+## 5. Hierarchical Graph RAG System
 
-### 5.1 Agentic AI Specialized Graph Schema
+### 5.1 Overview: Hybrid Graph + Vector Architecture
 
-**Node Types:**
+**The RAG system is the foundation of compound learning** - from Day 1, every agent built becomes retrievable knowledge that makes the next agent easier to build.
+
+**Core Architecture:**
+
 ```python
-AGENT_GRAPH_SCHEMA = {
-    'nodes': {
-        'Agent': {
-            'properties': ['name', 'role', 'type', 'model', 'capabilities'],
-            'description': 'An autonomous agent in the system'
+HIERARCHICAL_RAG_ARCHITECTURE = {
+    'dual_storage': {
+        'purpose': 'Combine semantic similarity (vectors) with structural relationships (graphs)',
+        
+        'vector_layer': {
+            'technology': 'ChromaDB (embedded)',
+            'purpose': 'Fast semantic search for code and examples',
+            'stores': [
+                'Agent code embeddings',
+                'Tool implementations',
+                'Code snippets',
+                'Documentation fragments'
+            ],
+            'retrieval_level': 'LOCAL - exact implementation details',
+            'query_speed': 'Very fast (<100ms)',
+            'embedding_model': 'sentence-transformers/all-MiniLM-L6-v2 (384 dims)'
         },
-        'Tool': {
-            'properties': ['name', 'description', 'parameters', 'return_type'],
-            'description': 'A tool/function available to agents'
+        
+        'graph_layer': {
+            'technology': 'Neo4j Community Edition',
+            'purpose': 'Structural knowledge and relationships',
+            'stores': [
+                'Agent patterns (nodes)',
+                'Framework concepts (nodes)',
+                'Tools and capabilities (nodes)',
+                'Orchestration patterns (nodes)',
+                'Gotchas and learnings (nodes)',
+                'Relationships: IMPLEMENTS, USES, INHERITS_FROM, MAPS_TO, etc.'
+            ],
+            'retrieval_level': 'GLOBAL + BRIDGE - patterns and mappings',
+            'query_speed': 'Fast (100-300ms)',
+            'query_capability': 'Multi-hop reasoning, pattern discovery'
         },
-        'State': {
-            'properties': ['name', 'schema', 'persistence'],
-            'description': 'State management structure'
-        },
-        'Orchestrator': {
-            'properties': ['name', 'routing_logic', 'delegation_strategy'],
-            'description': 'Agent that coordinates other agents'
-        },
-        'Framework': {
-            'properties': ['name', 'version', 'capabilities'],
-            'description': 'LangGraph, CrewAI, AutoGen, etc.'
-        },
-        'Pattern': {
-            'properties': ['name', 'type', 'use_case'],
-            'description': 'Design pattern (ReAct, Hierarchical, etc.)'
-        },
-        'File': {
-            'properties': ['path', 'type', 'language'],
-            'description': 'Source code file'
+        
+        'cross_indexing': {
+            'strategy': 'Bidirectional linkage between graph and vector stores',
+            'implementation': [
+                'Vector embedding metadata includes graph_node_id',
+                'Graph node properties include vector_embedding_id',
+                'Enables hybrid queries combining both stores'
+            ]
         }
     },
-    'relationships': {
-        'ORCHESTRATES': {'from': 'Orchestrator', 'to': 'Agent'},
-        'USES_TOOL': {'from': 'Agent', 'to': 'Tool'},
-        'MANAGES_STATE': {'from': 'Agent', 'to': 'State'},
-        'COMMUNICATES_WITH': {'from': 'Agent', 'to': 'Agent'},
-        'DELEGATES_TO': {'from': 'Agent', 'to': 'Agent'},
-        'IMPLEMENTS_PATTERN': {'from': 'Agent', 'to': 'Pattern'},
-        'BUILT_WITH': {'from': 'Agent', 'to': 'Framework'},
-        'DEFINED_IN': {'from': 'Agent', 'to': 'File'},
-        'CALLS': {'from': 'Agent', 'to': 'Agent'},
-        'SHARES_STATE_WITH': {'from': 'Agent', 'to': 'Agent'}
+    
+    'three_tier_hierarchy': {
+        'why_hierarchical': 'Different questions need different abstraction levels',
+        
+        'tier_1_global': {
+            'purpose': 'High-level patterns and architectural principles',
+            'retrieval_from': 'Graph database (top-level pattern nodes)',
+            'abstraction': 'Framework-agnostic, conceptual',
+            'query_examples': [
+                'What multi-agent orchestration patterns exist?',
+                'Show me supervisor-worker architectures',
+                'What are common tool integration approaches?',
+                'How do agents typically communicate?'
+            ],
+            'returns': 'Pattern categories, architectural blueprints, design principles'
+        },
+        
+        'tier_2_bridge': {
+            'purpose': 'Map abstract patterns to framework-specific implementations',
+            'retrieval_from': 'Graph relationships + Vector semantic search',
+            'abstraction': 'Framework-specific mappings',
+            'query_examples': [
+                'How does ReAct pattern map to LangGraph?',
+                'What CrewAI features implement supervisor pattern?',
+                'How do these patterns communicate in this framework?',
+                'What tools are needed for this pattern?'
+            ],
+            'returns': 'Framework-specific APIs, pattern implementations, gotchas'
+        },
+        
+        'tier_3_local': {
+            'purpose': 'Concrete code examples and exact syntax',
+            'retrieval_from': 'Vector database (code embeddings)',
+            'abstraction': 'Actual working code',
+            'query_examples': [
+                'Show me exact LangGraph StateGraph initialization',
+                'Get working example of tool calling in CrewAI',
+                'Find code for conditional edges',
+                'How did I handle errors in past agents?'
+            ],
+            'returns': 'Working code snippets, exact implementations, your past solutions'
+        }
     }
 }
 ```
 
-### 5.2 Example Graph Structure
+### 5.2 Graph Schema for Agent Knowledge
 
-```cypher
-// Example: Research Agent System
-
-// Orchestrator
-CREATE (orch:Orchestrator {
-    name: 'ResearchOrchestrator',
-    routing_logic: 'intent_based',
-    created: timestamp()
-})
-
-// Specialist Agents
-CREATE (browser:Agent {
-    name: 'BrowserAgent',
-    role: 'web_browsing',
-    type: 'specialist',
-    model: 'deepseek-coder-33b'
-})
-
-CREATE (analyzer:Agent {
-    name: 'AnalyzerAgent',
-    role: 'content_analysis',
-    type: 'specialist',
-    model: 'llama-3.1-70b'
-})
-
-CREATE (summarizer:Agent {
-    name: 'SummarizerAgent',
-    role: 'summarization',
-    type: 'specialist',
-    model: 'qwen-2.5-32b'
-})
-
-// Tools
-CREATE (search:Tool {
-    name: 'web_search',
-    description: 'Search the web for information',
-    parameters: '{"query": "string", "num_results": "int"}'
-})
-
-CREATE (fetch:Tool {
-    name: 'fetch_url',
-    description: 'Fetch content from URL',
-    parameters: '{"url": "string"}'
-})
-
-// State
-CREATE (state:State {
-    name: 'ResearchState',
-    schema: '{research_query, papers_found, analyses, final_summary}',
-    persistence: 'memory'
-})
-
-// Patterns
-CREATE (react:Pattern {
-    name: 'ReAct',
-    type: 'reasoning_acting',
-    use_case: 'interactive_research'
-})
-
-// Framework
-CREATE (lg:Framework {
-    name: 'LangGraph',
-    version: '0.2.0',
-    capabilities: ['state_management', 'conditional_routing', 'tool_calling']
-})
-
-// Relationships
-CREATE (orch)-[:ORCHESTRATES]->(browser)
-CREATE (orch)-[:ORCHESTRATES]->(analyzer)
-CREATE (orch)-[:ORCHESTRATES]->(summarizer)
-
-CREATE (browser)-[:USES_TOOL]->(search)
-CREATE (browser)-[:USES_TOOL]->(fetch)
-
-CREATE (orch)-[:MANAGES_STATE]->(state)
-CREATE (browser)-[:MANAGES_STATE]->(state)
-CREATE (analyzer)-[:MANAGES_STATE]->(state)
-CREATE (summarizer)-[:MANAGES_STATE]->(state)
-
-CREATE (browser)-[:COMMUNICATES_WITH]->(analyzer)
-CREATE (analyzer)-[:COMMUNICATES_WITH]->(summarizer)
-
-CREATE (orch)-[:IMPLEMENTS_PATTERN]->(react)
-CREATE (orch)-[:BUILT_WITH]->(lg)
-```
-
-### 5.3 Powerful Graph Queries
+**Node Types:**
 
 ```python
-class AgenticGraphRAG:
+AGENT_GRAPH_SCHEMA = {
+    'nodes': {
+        'Pattern': {
+            'properties': ['name', 'type', 'complexity', 'framework_agnostic', 'use_cases'],
+            'description': 'Agent design patterns (ReAct, Supervisor, Tool-Calling, etc.)',
+            'examples': ['ReAct', 'Supervisor-Worker', 'Hierarchical', 'Reflection']
+        },
+        
+        'Framework': {
+            'properties': ['name', 'version', 'specialty', 'learning_curve'],
+            'description': 'Agent frameworks',
+            'examples': ['LangGraph', 'CrewAI', 'AutoGen']
+        },
+        
+        'Agent': {
+            'properties': [
+                'name', 'created_date', 'outcome', 'your_rating', 
+                'time_to_build', 'complexity', 'client_project', 
+                'code_location', 'bugs_encountered', 'lessons_learned'
+            ],
+            'description': 'Actual agents you have built',
+            'examples': ['research_agent_v1', 'customer_support_bot', 'data_analyzer']
+        },
+        
+        'Tool': {
+            'properties': ['name', 'purpose', 'api_type', 'rate_limits', 'cost', 'reliability'],
+            'description': 'Tools that agents can use',
+            'examples': ['web_search', 'pdf_reader', 'database_query', 'api_caller']
+        },
+        
+        'Concept': {
+            'properties': ['name', 'framework', 'category', 'difficulty', 'documentation_link'],
+            'description': 'Framework-specific concepts',
+            'examples': ['StateGraph', 'conditional_edges', 'message_passing', 'Agent roles']
+        },
+        
+        'Gotcha': {
+            'properties': ['description', 'severity', 'times_saved_you', 'discovered_date'],
+            'description': 'Common mistakes and how to avoid them',
+            'examples': ['Must compile() before run', 'Tavily rate limits', 'State schema bugs']
+        },
+        
+        'UseCase': {
+            'properties': ['name', 'domain', 'complexity', 'common_patterns'],
+            'description': 'Application domains',
+            'examples': ['research_automation', 'customer_support', 'data_analysis']
+        },
+        
+        'Learning': {
+            'properties': ['description', 'learning_type', 'usefulness', 'source', 'date'],
+            'description': 'Your personal learnings and discoveries',
+            'examples': ['How to handle rate limits', 'Best state schema patterns']
+        }
+    },
+    
+    'relationships': {
+        'IMPLEMENTS': {
+            'from': 'Agent',
+            'to': 'Pattern',
+            'description': 'This agent implements this pattern',
+            'properties': ['implementation_quality', 'deviations']
+        },
+        
+        'USES': {
+            'from': 'Agent',
+            'to': 'Tool',
+            'description': 'This agent uses this tool',
+            'properties': ['frequency', 'success_rate']
+        },
+        
+        'BUILT_WITH': {
+            'from': 'Agent',
+            'to': 'Framework',
+            'description': 'This agent is built with this framework',
+            'properties': ['framework_version']
+        },
+        
+        'MAPS_TO': {
+            'from': 'Pattern',
+            'to': 'Concept',
+            'description': 'This pattern maps to this framework concept',
+            'properties': ['framework', 'mapping_quality']
+        },
+        
+        'REQUIRES': {
+            'from': 'Pattern',
+            'to': 'Concept',
+            'description': 'This pattern requires understanding this concept',
+            'properties': ['importance']
+        },
+        
+        'COMPOSED_OF': {
+            'from': 'Pattern',
+            'to': 'Pattern',
+            'description': 'This pattern is composed of other patterns',
+            'properties': ['relationship_type']
+        },
+        
+        'SIMILAR_TO': {
+            'from': 'Agent',
+            'to': 'Agent',
+            'description': 'These agents have similar architecture',
+            'properties': ['similarity_score', 'shared_tools', 'shared_patterns']
+        },
+        
+        'SUCCEEDED_BY': {
+            'from': 'Agent',
+            'to': 'Agent',
+            'description': 'Agent v2 improved upon v1',
+            'properties': ['improvements', 'bugs_fixed']
+        },
+        
+        'GOTCHA_FOR': {
+            'from': 'Gotcha',
+            'to': 'Concept',
+            'description': 'Common mistake related to this concept',
+            'properties': ['frequency']
+        },
+        
+        'SUITABLE_FOR': {
+            'from': 'Pattern',
+            'to': 'UseCase',
+            'description': 'This pattern works well for this use case',
+            'properties': ['success_rate']
+        },
+        
+        'LEARNED_FROM': {
+            'from': 'Learning',
+            'to': 'Agent',
+            'description': 'This learning came from building this agent',
+            'properties': ['impact']
+        }
+    }
+}
+```
+
+### 5.3 Initial Knowledge Seeding
+
+**Day 1 Seed Data** (~50 nodes, ~100 relationships):
+
+```cypher
+// === SEED PATTERNS ===
+
+CREATE (react:Pattern {
+    name: 'ReAct',
+    type: 'single_agent',
+    complexity: 'medium',
+    framework_agnostic: true,
+    use_cases: ['research', 'analysis', 'problem_solving'],
+    description: 'Reasoning and Acting loop - agent thinks, acts, observes, repeat'
+})
+
+CREATE (supervisor:Pattern {
+    name: 'Supervisor-Worker',
+    type: 'multi_agent',
+    complexity: 'high',
+    framework_agnostic: true,
+    use_cases: ['complex_tasks', 'parallel_processing', 'delegation'],
+    description: 'Central supervisor delegates tasks to specialized worker agents'
+})
+
+CREATE (tool_calling:Pattern {
+    name: 'Tool Calling',
+    type: 'single_agent',
+    complexity: 'simple',
+    framework_agnostic: true,
+    use_cases: ['api_integration', 'external_data', 'automation'],
+    description: 'Agent with ability to call external tools and APIs'
+})
+
+CREATE (reflection:Pattern {
+    name: 'Reflection',
+    type: 'enhancement',
+    complexity: 'medium',
+    framework_agnostic: true,
+    use_cases: ['quality_improvement', 'self_correction', 'learning'],
+    description: 'Agent reviews and improves its own outputs'
+})
+
+CREATE (hierarchical:Pattern {
+    name: 'Hierarchical Multi-Agent',
+    type: 'multi_agent',
+    complexity: 'very_high',
+    framework_agnostic: true,
+    use_cases: ['enterprise_systems', 'complex_orchestration'],
+    description: 'Multiple layers of delegation and coordination'
+})
+
+// === SEED FRAMEWORKS ===
+
+CREATE (langgraph:Framework {
+    name: 'LangGraph',
+    version: '0.2.0',
+    specialty: 'stateful_graphs',
+    learning_curve: 'steep'
+})
+
+CREATE (crewai:Framework {
+    name: 'CrewAI',
+    version: '0.1.0',
+    specialty: 'role_based_agents',
+    learning_curve: 'gentle'
+})
+
+CREATE (autogen:Framework {
+    name: 'AutoGen',
+    version: '0.2.0',
+    specialty: 'conversational_agents',
+    learning_curve: 'medium'
+})
+
+// === SEED LANGGRAPH CONCEPTS ===
+
+CREATE (state_graph:Concept {
+    name: 'StateGraph',
+    framework: 'LangGraph',
+    category: 'core',
+    difficulty: 'medium',
+    documentation_link: 'https://langchain-ai.github.io/langgraph/'
+})
+
+CREATE (conditional_edges:Concept {
+    name: 'conditional_edges',
+    framework: 'LangGraph',
+    category: 'routing',
+    difficulty: 'medium'
+})
+
+CREATE (tool_node:Concept {
+    name: 'ToolNode',
+    framework: 'LangGraph',
+    category: 'tools',
+    difficulty: 'simple'
+})
+
+CREATE (checkpointer:Concept {
+    name: 'Checkpointer',
+    framework: 'LangGraph',
+    category: 'state_management',
+    difficulty: 'high'
+})
+
+// === SEED CREWAI CONCEPTS ===
+
+CREATE (agent_role:Concept {
+    name: 'Agent Role',
+    framework: 'CrewAI',
+    category: 'core',
+    difficulty: 'simple'
+})
+
+CREATE (task_delegation:Concept {
+    name: 'Task Delegation',
+    framework: 'CrewAI',
+    category: 'orchestration',
+    difficulty: 'medium'
+})
+
+CREATE (process_type:Concept {
+    name: 'Process Type',
+    framework: 'CrewAI',
+    category: 'execution',
+    difficulty: 'simple'
+})
+
+// === SEED TOOLS ===
+
+CREATE (web_search:Tool {
+    name: 'web_search',
+    purpose: 'Search the internet for information',
+    api_type: 'DuckDuckGo / Tavily',
+    rate_limits: 'Tavily: 100/min, DuckDuckGo: unlimited',
+    cost: 'Tavily: paid, DuckDuckGo: free',
+    reliability: 'high'
+})
+
+CREATE (pdf_reader:Tool {
+    name: 'pdf_reader',
+    purpose: 'Extract text from PDF documents',
+    api_type: 'PyPDF2 / pdfplumber',
+    rate_limits: 'none',
+    cost: 'free',
+    reliability: 'high'
+})
+
+CREATE (file_ops:Tool {
+    name: 'file_operations',
+    purpose: 'Read, write, search files',
+    api_type: 'Python filesystem',
+    rate_limits: 'none',
+    cost: 'free',
+    reliability: 'very_high'
+})
+
+CREATE (code_exec:Tool {
+    name: 'code_execution',
+    purpose: 'Execute Python code safely',
+    api_type: 'subprocess / docker',
+    rate_limits: 'none',
+    cost: 'free',
+    reliability: 'medium'
+})
+
+CREATE (api_caller:Tool {
+    name: 'api_caller',
+    purpose: 'Call external REST APIs',
+    api_type: 'requests library',
+    rate_limits: 'depends_on_api',
+    cost: 'depends_on_api',
+    reliability: 'high'
+})
+
+// === SEED GOTCHAS ===
+
+CREATE (gotcha_compile:Gotcha {
+    description: 'LangGraph StateGraph must call .compile() before execution',
+    severity: 'high',
+    times_saved_you: 0,
+    discovered_date: date()
+})
+
+CREATE (gotcha_tavily:Gotcha {
+    description: 'Tavily search API has 100 requests/minute rate limit',
+    severity: 'medium',
+    times_saved_you: 0,
+    discovered_date: date()
+})
+
+CREATE (gotcha_state_schema:Gotcha {
+    description: 'LangGraph state schema must be TypedDict or dataclass',
+    severity: 'high',
+    times_saved_you: 0,
+    discovered_date: date()
+})
+
+CREATE (gotcha_tool_schema:Gotcha {
+    description: 'Tool functions need proper type hints for LangChain integration',
+    severity: 'medium',
+    times_saved_you: 0,
+    discovered_date: date()
+})
+
+CREATE (gotcha_crewai_roles:Gotcha {
+    description: 'CrewAI agents need specific, well-defined roles for best performance',
+    severity: 'low',
+    times_saved_you: 0,
+    discovered_date: date()
+})
+
+// === SEED USE CASES ===
+
+CREATE (research:UseCase {
+    name: 'research_automation',
+    domain: 'information_gathering',
+    complexity: 'medium',
+    common_patterns: ['ReAct', 'Tool Calling']
+})
+
+CREATE (customer_support:UseCase {
+    name: 'customer_support',
+    domain: 'conversational_ai',
+    complexity: 'medium',
+    common_patterns: ['Tool Calling', 'Reflection']
+})
+
+CREATE (data_analysis:UseCase {
+    name: 'data_analysis',
+    domain: 'analytics',
+    complexity: 'high',
+    common_patterns: ['Supervisor-Worker', 'Tool Calling']
+})
+
+// === PATTERN RELATIONSHIPS ===
+
+CREATE (react)-[:MAPS_TO {framework: 'LangGraph', mapping_quality: 'excellent'}]->(state_graph)
+CREATE (react)-[:REQUIRES {importance: 'critical'}]->(tool_calling)
+
+CREATE (tool_calling)-[:MAPS_TO {framework: 'LangGraph'}]->(tool_node)
+CREATE (tool_calling)-[:USES]->(web_search)
+CREATE (tool_calling)-[:USES]->(pdf_reader)
+CREATE (tool_calling)-[:USES]->(file_ops)
+
+CREATE (supervisor)-[:MAPS_TO {framework: 'LangGraph'}]->(conditional_edges)
+CREATE (supervisor)-[:COMPOSED_OF]->(tool_calling)
+CREATE (supervisor)-[:MAPS_TO {framework: 'CrewAI'}]->(task_delegation)
+
+CREATE (hierarchical)-[:COMPOSED_OF]->(supervisor)
+CREATE (hierarchical)-[:MAPS_TO {framework: 'CrewAI'}]->(process_type)
+
+// === GOTCHA RELATIONSHIPS ===
+
+CREATE (gotcha_compile)-[:GOTCHA_FOR {frequency: 'very_common'}]->(state_graph)
+CREATE (gotcha_tavily)-[:GOTCHA_FOR {frequency: 'common'}]->(web_search)
+CREATE (gotcha_state_schema)-[:GOTCHA_FOR {frequency: 'common'}]->(state_graph)
+CREATE (gotcha_tool_schema)-[:GOTCHA_FOR {frequency: 'occasional'}]->(tool_node)
+CREATE (gotcha_crewai_roles)-[:GOTCHA_FOR {frequency: 'occasional'}]->(agent_role)
+
+// === PATTERN USE CASE RELATIONSHIPS ===
+
+CREATE (react)-[:SUITABLE_FOR {success_rate: 0.85}]->(research)
+CREATE (tool_calling)-[:SUITABLE_FOR {success_rate: 0.90}]->(research)
+CREATE (supervisor)-[:SUITABLE_FOR {success_rate: 0.80}]->(data_analysis)
+CREATE (reflection)-[:SUITABLE_FOR {success_rate: 0.75}]->(customer_support)
+
+// === FRAMEWORK RELATIONSHIPS ===
+
+CREATE (state_graph)-[:BELONGS_TO]->(langgraph)
+CREATE (conditional_edges)-[:BELONGS_TO]->(langgraph)
+CREATE (tool_node)-[:BELONGS_TO]->(langgraph)
+CREATE (checkpointer)-[:BELONGS_TO]->(langgraph)
+
+CREATE (agent_role)-[:BELONGS_TO]->(crewai)
+CREATE (task_delegation)-[:BELONGS_TO]->(crewai)
+CREATE (process_type)-[:BELONGS_TO]->(crewai)
+```
+
+### 5.4 Hierarchical Retrieval Implementation
+
+```python
+class HierarchicalRAG:
     """
-    Graph RAG specialized for agentic AI systems
+    Three-tier hierarchical retrieval for agent building
     """
     
-    def __init__(self, neo4j_connection):
-        self.graph = neo4j_connection
+    def __init__(self, neo4j_driver, chroma_client):
+        self.graph = neo4j_driver
+        self.vectors = chroma_client
+        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
     
-    def find_agent_architecture(self, agent_name: str):
-        """Get complete architecture for an agent system"""
-        
-        query = """
-        MATCH (orch:Orchestrator {name: $agent_name})
-        OPTIONAL MATCH (orch)-[:ORCHESTRATES]->(agent:Agent)
-        OPTIONAL MATCH (agent)-[:USES_TOOL]->(tool:Tool)
-        OPTIONAL MATCH (orch)-[:MANAGES_STATE]->(state:State)
-        OPTIONAL MATCH (agent)-[:COMMUNICATES_WITH]->(other:Agent)
-        OPTIONAL MATCH (orch)-[:IMPLEMENTS_PATTERN]->(pattern:Pattern)
-        OPTIONAL MATCH (orch)-[:BUILT_WITH]->(framework:Framework)
-        
-        RETURN 
-            orch,
-            collect(DISTINCT agent) as agents,
-            collect(DISTINCT tool) as tools,
-            collect(DISTINCT state) as states,
-            collect(DISTINCT {from: agent.name, to: other.name}) as communications,
-            collect(DISTINCT pattern) as patterns,
-            collect(DISTINCT framework) as frameworks
+    async def hierarchical_retrieve(self, query: str, task_context: dict):
+        """
+        Complete hierarchical retrieval workflow
         """
         
-        return self.graph.query(query, agent_name=agent_name)
-    
-    def find_agents_using_tool(self, tool_name: str):
-        """Find all agents that use a specific tool"""
+        # === TIER 1: GLOBAL (Graph) ===
+        global_context = await self._retrieve_global(query, task_context)
         
-        query = """
-        MATCH (agent:Agent)-[:USES_TOOL]->(tool:Tool {name: $tool_name})
-        RETURN agent.name, agent.role, agent.type
+        # === TIER 2: BRIDGE (Graph + Vector) ===
+        bridge_context = await self._retrieve_bridge(
+            query,
+            task_context,
+            global_context
+        )
+        
+        # === TIER 3: LOCAL (Vector) ===
+        local_context = await self._retrieve_local(
+            query,
+            task_context,
+            global_context,
+            bridge_context
+        )
+        
+        # === SYNTHESIS ===
+        synthesized = await self._synthesize(
+            query,
+            global_context,
+            bridge_context,
+            local_context
+        )
+        
+        return {
+            'global': global_context,
+            'bridge': bridge_context,
+            'local': local_context,
+            'synthesized': synthesized,
+            'confidence': self._assess_confidence(synthesized)
+        }
+    
+    async def _retrieve_global(self, query, context):
+        """
+        Tier 1: High-level patterns from graph
         """
         
-        return self.graph.query(query, tool_name=tool_name)
-    
-    def find_communication_patterns(self):
-        """Analyze agent communication patterns"""
+        # Extract intent from query
+        intent = self._classify_intent(query)
         
-        query = """
-        MATCH (a1:Agent)-[c:COMMUNICATES_WITH]->(a2:Agent)
-        RETURN a1.name as from_agent, 
-               a2.name as to_agent,
-               c.protocol as protocol,
-               c.message_type as message_type
+        if intent == 'create_agent':
+            # Get relevant patterns
+            patterns_query = """
+            MATCH (p:Pattern)
+            WHERE toLower(p.description) CONTAINS toLower($query)
+               OR ANY(uc IN p.use_cases WHERE toLower(uc) CONTAINS toLower($domain))
+            RETURN p
+            ORDER BY p.complexity
+            LIMIT 5
+            """
+            
+            patterns = self.graph.execute_read(
+                patterns_query,
+                query=query,
+                domain=context.get('domain', '')
+            )
+            
+            return {
+                'intent': intent,
+                'patterns': patterns,
+                'abstraction_level': 'global'
+            }
+        
+        elif intent == 'add_tool':
+            # Get tool and its usage patterns
+            tool_query = """
+            MATCH (t:Tool)<-[:USES]-(a:Agent)-[:IMPLEMENTS]->(p:Pattern)
+            WHERE toLower(t.name) CONTAINS toLower($tool_name)
+            RETURN t, collect(DISTINCT p) as patterns, count(a) as usage_count
+            """
+            
+            tool_info = self.graph.execute_read(
+                tool_query,
+                tool_name=context.get('tool', '')
+            )
+            
+            return {
+                'intent': intent,
+                'tool_info': tool_info,
+                'abstraction_level': 'global'
+            }
+        
+        elif intent == 'debug':
+            # Get relevant gotchas
+            gotcha_query = """
+            MATCH (g:Gotcha)-[:GOTCHA_FOR]->(c:Concept)
+            WHERE toLower(g.description) CONTAINS toLower($error)
+            RETURN g, c
+            ORDER BY g.severity DESC, g.times_saved_you DESC
+            LIMIT 5
+            """
+            
+            gotchas = self.graph.execute_read(
+                gotcha_query,
+                error=query
+            )
+            
+            return {
+                'intent': intent,
+                'gotchas': gotchas,
+                'abstraction_level': 'global'
+            }
+    
+    async def _retrieve_bridge(self, query, context, global_ctx):
+        """
+        Tier 2: Framework-specific mappings (Graph + Vector)
         """
         
-        return self.graph.query(query)
-    
-    def find_similar_agents(self, agent_name: str):
-        """Find agents with similar architecture"""
+        framework = context.get('framework', 'langgraph')
+        patterns = global_ctx.get('patterns', [])
         
-        query = """
-        MATCH (target:Agent {name: $agent_name})-[:USES_TOOL]->(tool:Tool)
-        WITH target, collect(tool.name) as target_tools
+        if not patterns:
+            return {'abstraction_level': 'bridge', 'mappings': []}
         
-        MATCH (other:Agent)-[:USES_TOOL]->(other_tool:Tool)
-        WHERE other.name <> target.name 
-          AND other_tool.name IN target_tools
-        WITH other, 
-             count(DISTINCT other_tool) as shared_tools,
-             size(target_tools) as total_tools
-        WHERE shared_tools > 0
-        
-        RETURN other.name,
-               other.role,
-               shared_tools,
-               total_tools,
-               toFloat(shared_tools) / total_tools as similarity
-        ORDER BY similarity DESC
-        LIMIT 5
+        # Graph: Get framework-specific concepts
+        mapping_query = """
+        MATCH (p:Pattern)-[m:MAPS_TO]->(c:Concept)-[:BELONGS_TO]->(f:Framework)
+        WHERE p.name IN $pattern_names AND f.name = $framework
+        OPTIONAL MATCH (p)-[:REQUIRES]->(req:Concept)
+        OPTIONAL MATCH (g:Gotcha)-[:GOTCHA_FOR]->(c)
+        RETURN p, c, collect(DISTINCT req) as requirements, collect(DISTINCT g) as gotchas
         """
         
-        return self.graph.query(query, agent_name=agent_name)
-    
-    def find_orchestration_hierarchy(self):
-        """Get full orchestration hierarchy"""
+        graph_mappings = self.graph.execute_read(
+            mapping_query,
+            pattern_names=[p['name'] for p in patterns],
+            framework=framework
+        )
         
-        query = """
-        MATCH path = (top:Orchestrator)-[:ORCHESTRATES*]->(agent:Agent)
-        RETURN path, length(path) as depth
-        ORDER BY depth
+        # Vector: Find similar agents that used these patterns
+        similar_agents_query = f"{patterns[0]['name']} agent {framework} implementation"
+        vector_examples = self.vectors.query(
+            query_texts=[similar_agents_query],
+            n_results=3,
+            where={
+                'framework': framework,
+                'pattern': patterns[0]['name'],
+                'outcome': 'success'
+            }
+        )
+        
+        return {
+            'abstraction_level': 'bridge',
+            'framework': framework,
+            'graph_mappings': graph_mappings,
+            'example_agents': vector_examples,
+            'gotchas': [g for mapping in graph_mappings for g in mapping.get('gotchas', [])]
+        }
+    
+    async def _retrieve_local(self, query, context, global_ctx, bridge_ctx):
+        """
+        Tier 3: Concrete code examples from vector store
         """
         
-        return self.graph.query(query)
+        framework = context.get('framework', 'langgraph')
+        patterns = global_ctx.get('patterns', [])
+        
+        # Build specific code query
+        code_query = f"{query} {framework} code example"
+        
+        # Search for working code
+        code_results = self.vectors.query(
+            query_texts=[code_query],
+            n_results=5,
+            where={
+                'type': 'code',
+                'framework': framework,
+                'has_working_example': True
+            }
+        )
+        
+        # Also get your own past implementations if similar
+        your_past_query = self.vectors.query(
+            query_texts=[query],
+            n_results=3,
+            where={
+                'author': 'user',
+                'framework': framework,
+                'outcome': 'success'
+            }
+        )
+        
+        return {
+            'abstraction_level': 'local',
+            'code_examples': code_results,
+            'your_past_solutions': your_past_query,
+            'ready_to_use': True
+        }
     
-    def impact_analysis(self, tool_name: str):
-        """What breaks if we change/remove this tool?"""
-        
-        query = """
-        MATCH (tool:Tool {name: $tool_name})<-[:USES_TOOL]-(agent:Agent)
-        MATCH (agent)<-[:ORCHESTRATES]-(orch:Orchestrator)
-        
-        RETURN 
-            tool.name as changed_tool,
-            collect(DISTINCT agent.name) as affected_agents,
-            collect(DISTINCT orch.name) as affected_orchestrators,
-            count(DISTINCT agent) as num_affected_agents
+    async def _synthesize(self, query, global_ctx, bridge_ctx, local_ctx):
+        """
+        Synthesize all three levels into actionable solution
         """
         
-        return self.graph.query(query, tool_name=tool_name)
+        synthesis = {
+            'query': query,
+            'recommended_pattern': global_ctx['patterns'][0] if global_ctx.get('patterns') else None,
+            'framework_specifics': {
+                'concepts': [m.get('c') for m in bridge_ctx.get('graph_mappings', [])],
+                'requirements': [],
+                'gotchas': bridge_ctx.get('gotchas', [])
+            },
+            'code_template': local_ctx.get('code_examples', {}).get('documents', [[]])[0] if local_ctx.get('code_examples') else None,
+            'your_past_approach': local_ctx.get('your_past_solutions'),
+            'implementation_steps': self._generate_steps(global_ctx, bridge_ctx, local_ctx)
+        }
+        
+        return synthesis
+    
+    def _generate_steps(self, global_ctx, bridge_ctx, local_ctx):
+        """Generate implementation steps from retrieved context"""
+        
+        steps = []
+        
+        # From global: pattern steps
+        if global_ctx.get('patterns'):
+            pattern = global_ctx['patterns'][0]
+            steps.append(f"1. Implement {pattern['name']} pattern")
+        
+        # From bridge: framework setup
+        if bridge_ctx.get('graph_mappings'):
+            concepts = [m.get('c', {}).get('name') for m in bridge_ctx['graph_mappings']]
+            steps.append(f"2. Setup {', '.join(concepts)}")
+        
+        # From local: code implementation
+        if local_ctx.get('code_examples'):
+            steps.append("3. Use code template from similar agent")
+        
+        # Add gotcha warnings
+        if bridge_ctx.get('gotchas'):
+            steps.append(f"4. Watch out for: {bridge_ctx['gotchas'][0].get('description')}")
+        
+        return steps
+```
+
+### 5.5 Self-Updating Mechanism
+
+```python
+class SelfUpdatingRAG:
+    """
+    Automatically update RAG with every agent built
+    """
+    
+    def __init__(self, hierarchical_rag):
+        self.rag = hierarchical_rag
+    
+    async def store_new_agent(self, agent_code: str, metadata: dict):
+        """
+        Store newly generated agent in both graph and vector stores
+        """
+        
+        # === STEP 1: Vector Storage ===
+        embedding = self.rag.embedding_model.encode(agent_code)
+        
+        vector_id = await self.rag.vectors.add(
+            documents=[agent_code],
+            embeddings=[embedding],
+            metadatas=[{
+                'name': metadata['name'],
+                'framework': metadata['framework'],
+                'patterns': metadata['patterns'],
+                'tools': metadata['tools'],
+                'outcome': metadata['outcome'],
+                'your_rating': metadata.get('rating'),
+                'created_date': datetime.now().isoformat(),
+                'graph_node_id': None  # Will update after graph creation
+            }],
+            ids=[metadata['agent_id']]
+        )
+        
+        # === STEP 2: Graph Storage ===
+        graph_node_id = await self._create_agent_graph_node(metadata, vector_id)
+        
+        # === STEP 3: Cross-Index ===
+        await self.rag.vectors.update(
+            ids=[vector_id],
+            metadatas=[{'graph_node_id': graph_node_id}]
+        )
+        
+        # === STEP 4: Create Relationships ===
+        await self._create_agent_relationships(graph_node_id, metadata)
+        
+        # === STEP 5: Pattern Mining (if threshold reached) ===
+        agent_count = await self._get_agent_count()
+        if agent_count % 10 == 0:
+            await self._mine_emerging_patterns()
+        
+        return {'vector_id': vector_id, 'graph_node_id': graph_node_id}
+    
+    async def _create_agent_graph_node(self, metadata, vector_id):
+        """Create agent node in graph"""
+        
+        create_query = """
+        CREATE (a:Agent {
+            name: $name,
+            created_date: datetime(),
+            outcome: $outcome,
+            your_rating: $rating,
+            time_to_build: $time_to_build,
+            complexity: $complexity,
+            client_project: $client_project,
+            code_location: $code_location,
+            vector_embedding_id: $vector_id
+        })
+        RETURN id(a) as node_id
+        """
+        
+        result = await self.rag.graph.execute_write(
+            create_query,
+            name=metadata['name'],
+            outcome=metadata['outcome'],
+            rating=metadata.get('rating', 0),
+            time_to_build=metadata.get('time_to_build', 0),
+            complexity=metadata.get('complexity', 'medium'),
+            client_project=metadata.get('client_project'),
+            code_location=metadata.get('code_location'),
+            vector_id=vector_id
+        )
+        
+        return result[0]['node_id']
+    
+    async def _create_agent_relationships(self, agent_node_id, metadata):
+        """Create relationships for new agent"""
+        
+        # Agent IMPLEMENTS Pattern
+        for pattern in metadata['patterns']:
+            await self.rag.graph.execute_write("""
+                MATCH (a:Agent), (p:Pattern {name: $pattern})
+                WHERE id(a) = $agent_id
+                CREATE (a)-[:IMPLEMENTS {
+                    implementation_quality: $quality
+                }]->(p)
+            """, agent_id=agent_node_id, pattern=pattern, quality=metadata.get('rating', 0) / 5.0)
+        
+        # Agent USES Tool
+        for tool in metadata['tools']:
+            await self.rag.graph.execute_write("""
+                MATCH (a:Agent), (t:Tool {name: $tool})
+                WHERE id(a) = $agent_id
+                MERGE (a)-[:USES {
+                    success_rate: 1.0
+                }]->(t)
+            """, agent_id=agent_node_id, tool=tool)
+        
+        # Agent BUILT_WITH Framework
+        await self.rag.graph.execute_write("""
+            MATCH (a:Agent), (f:Framework {name: $framework})
+            WHERE id(a) = $agent_id
+            CREATE (a)-[:BUILT_WITH]->(f)
+        """, agent_id=agent_node_id, framework=metadata['framework'])
+        
+        # Find SIMILAR_TO agents
+        similar_query = """
+        MATCH (new:Agent), (other:Agent)-[:USES]->(t:Tool)
+        WHERE id(new) = $agent_id 
+          AND id(other) <> $agent_id
+          AND (new)-[:USES]->(t)
+        WITH new, other, count(t) as shared_tools
+        WHERE shared_tools >= 2
+        CREATE (new)-[:SIMILAR_TO {
+            similarity_score: toFloat(shared_tools) / 5.0,
+            shared_tools: shared_tools
+        }]->(other)
+        """
+        
+        await self.rag.graph.execute_write(similar_query, agent_id=agent_node_id)
+    
+    async def _mine_emerging_patterns(self):
+        """
+        Every 10 agents, look for new patterns
+        """
+        
+        # Find clusters of similar agents
+        cluster_query = """
+        MATCH (a:Agent)-[:USES]->(t:Tool)
+        WITH t, collect(a) as agents
+        WHERE size(agents) >= 3
+        RETURN t.name as tool, 
+               size(agents) as agent_count,
+               agents
+        ORDER BY agent_count DESC
+        """
+        
+        clusters = await self.rag.graph.execute_read(cluster_query)
+        
+        # If we find emerging patterns, could create new pattern nodes
+        # For MVP, just log them for manual review
+        for cluster in clusters:
+            print(f"📊 Emerging pattern: {cluster['agent_count']} agents use {cluster['tool']}")
+```
+
+### 5.6 Query Examples for Agent Building
+
+```python
+QUERY_EXAMPLES = {
+    'pattern_discovery': {
+        'user_query': 'How do I build a multi-agent research system?',
+        'retrieval_flow': '''
+        GLOBAL: Find multi-agent patterns
+            → Returns: Supervisor-Worker, Hierarchical patterns
+        
+        BRIDGE: Map to LangGraph specifics
+            → Returns: conditional_edges, StateGraph, communication patterns
+            → Also returns: 2 similar agents you built before
+        
+        LOCAL: Get working code
+            → Returns: Code templates, your past multi-agent implementations
+        
+        SYNTHESIS: Complete implementation plan with pattern + framework + code
+        '''
+    },
+    
+    'tool_integration': {
+        'user_query': 'Add web search to my agent',
+        'retrieval_flow': '''
+        GLOBAL: Find web_search tool and its patterns
+            → Returns: Tool info, rate limits, common usage patterns
+        
+        BRIDGE: Get LangGraph tool integration approach
+            → Returns: ToolNode concept, tool calling patterns
+            → Gotcha: Tavily rate limits
+        
+        LOCAL: Get working examples
+            → Returns: 3 agents that successfully use web_search
+        
+        SYNTHESIS: Tool integration code + gotchas + best practices
+        '''
+    },
+    
+    'debugging': {
+        'user_query': 'My LangGraph agent won\'t compile',
+        'retrieval_flow': '''
+        GLOBAL: Find compile-related gotchas
+            → Returns: "Must call .compile() before execution" gotcha
+        
+        BRIDGE: Find agents that had similar issues
+            → Returns: 2 past agents where you fixed this
+        
+        LOCAL: Get fix examples
+            → Returns: Before/after code showing proper compile() usage
+        
+        SYNTHESIS: Diagnosis + fix steps + code example
+        '''
+    },
+    
+    'learning_from_past': {
+        'user_query': 'Create agent similar to research_agent_v1 but with PDF support',
+        'retrieval_flow': '''
+        GLOBAL: Find research_agent_v1 and its pattern
+            → Returns: Original agent, ReAct pattern
+        
+        BRIDGE: Get PDF tool integration
+            → Returns: pdf_reader tool, integration patterns
+            → Finds: Other agents that combined search + PDF
+        
+        LOCAL: Get original agent code + PDF examples
+            → Returns: research_agent_v1 code + PDF integration code
+        
+        SYNTHESIS: Modified version of your agent with PDF added
+        '''
+    }
+}
 ```
 
 ---
@@ -2000,28 +2751,48 @@ class CognitiveGraphAgent:
         )
     
     async def _retrieve_graph(self, task):
-        """Retrieve structural knowledge from graph"""
+        """
+        Retrieve structural knowledge using hierarchical Graph RAG
+        
+        Uses 3-tier hierarchical retrieval (HiRAG):
+        - GLOBAL tier: High-level patterns from graph
+        - BRIDGE tier: Framework-specific mappings (graph + vector)
+        - LOCAL tier: Concrete code examples from vector store
+        """
         
         # Extract key concepts from task
         concepts = self._extract_concepts(task)
         
-        graph_context = {}
+        # === Use Hierarchical RAG for complete context ===
+        hirag_results = await self.graph_rag.hierarchical_retrieve(
+            query=task.description,
+            task_context={
+                'domain': concepts.get('domain'),
+                'framework': concepts.get('framework', 'langgraph'),
+                'tool': concepts.get('tool_name'),
+                'complexity': task.complexity
+            }
+        )
         
-        # For agent creation task
-        if 'agent' in concepts:
-            # Find similar agent architectures
-            graph_context['similar_agents'] = \
-                self.graph_rag.find_similar_agents(concepts.get('agent_type'))
+        # Structure the hierarchical results
+        graph_context = {
+            # From GLOBAL tier
+            'patterns': hirag_results['global'].get('patterns', []),
+            'intent': hirag_results['global'].get('intent'),
             
-            # Get relevant patterns
-            graph_context['patterns'] = \
-                self.graph_rag.get_patterns_for_use_case(concepts.get('use_case'))
-        
-        # For tool integration task
-        if 'tool' in concepts:
-            # Find examples of tool usage
-            graph_context['tool_examples'] = \
-                self.graph_rag.find_agents_using_tool(concepts.get('tool_name'))
+            # From BRIDGE tier
+            'framework_mappings': hirag_results['bridge'].get('graph_mappings', []),
+            'similar_agents': hirag_results['bridge'].get('example_agents'),
+            'gotchas': hirag_results['bridge'].get('gotchas', []),
+            
+            # From LOCAL tier
+            'code_examples': hirag_results['local'].get('code_examples'),
+            'your_past_solutions': hirag_results['local'].get('your_past_solutions'),
+            
+            # Synthesized
+            'recommended_approach': hirag_results['synthesized'],
+            'confidence': hirag_results['confidence']
+        }
         
         return graph_context
     
@@ -2098,9 +2869,9 @@ class CognitiveGraphAgent:
 # User request
 task = Task(description="Create a research agent that can browse web and analyze papers")
 
-# === Agent processes task ===
+# === Agent processes task with Hierarchical RAG ===
 
-# 1. Episodic Memory retrieves:
+# 1. Episodic Memory retrieves (your past experiences):
 episodic_context = {
     'similar_task_1': {
         'description': 'Built document analysis agent',
@@ -2115,29 +2886,110 @@ episodic_context = {
     }
 }
 
-# 2. Graph RAG retrieves:
-graph_context = {
-    'similar_agents': [
-        {
-            'name': 'DocumentAnalyzer',
-            'architecture': {
-                'type': 'single_agent',
-                'pattern': 'ReAct',
-                'tools': ['pdf_reader', 'summarizer'],
-                'framework': 'LangGraph'
-            }
-        }
-    ],
+# 2. Hierarchical Graph RAG retrieves (3-tier):
+
+## GLOBAL TIER (from graph - high-level patterns):
+global_context = {
+    'intent': 'create_agent',
     'patterns': [
         {
             'name': 'ReAct',
-            'use_cases': ['research', 'analysis', 'multi_step_tasks'],
-            'implementation': '...'
+            'type': 'single_agent',
+            'complexity': 'medium',
+            'use_cases': ['research', 'analysis', 'problem_solving'],
+            'description': 'Reasoning and Acting loop'
+        },
+        {
+            'name': 'Tool Calling',
+            'type': 'single_agent',
+            'complexity': 'simple',
+            'use_cases': ['api_integration', 'external_data']
         }
-    ]
+    ],
+    'abstraction_level': 'global'
 }
 
-# 3. Semantic Memory adds:
+## BRIDGE TIER (from graph + vector - framework mappings):
+bridge_context = {
+    'framework': 'langgraph',
+    'graph_mappings': [
+        {
+            'pattern': 'ReAct',
+            'concept': 'StateGraph',
+            'requirements': ['conditional_edges', 'tool_node'],
+            'framework': 'LangGraph'
+        }
+    ],
+    'example_agents': [
+        # 2 agents you built before that used ReAct
+        'research_agent_v1',
+        'pdf_analyzer'
+    ],
+    'gotchas': [
+        {
+            'description': 'LangGraph StateGraph must call .compile() before execution',
+            'severity': 'high',
+            'times_saved_you': 3
+        },
+        {
+            'description': 'Tavily search API has 100 requests/minute rate limit',
+            'severity': 'medium'
+        }
+    ],
+    'abstraction_level': 'bridge'
+}
+
+## LOCAL TIER (from vector store - concrete code):
+local_context = {
+    'code_examples': {
+        'documents': [
+            # Working code from LangGraph docs
+            '''
+            from langgraph.graph import StateGraph
+            from langgraph.prebuilt import ToolNode
+            
+            graph = StateGraph(AgentState)
+            graph.add_node("agent", call_model)
+            graph.add_node("tools", ToolNode(tools))
+            graph.add_edge("tools", "agent")
+            ...
+            '''
+        ]
+    },
+    'your_past_solutions': {
+        'documents': [
+            # Your research_agent_v1 code
+            '''
+            # From research_agent_v1 (your project from 2 weeks ago)
+            tools = [web_search, fetch_url]
+            agent = create_react_agent(llm, tools)
+            ...
+            '''
+        ]
+    },
+    'abstraction_level': 'local',
+    'ready_to_use': True
+}
+
+## SYNTHESIZED (combined intelligence):
+synthesized = {
+    'recommended_pattern': 'ReAct',
+    'framework_specifics': {
+        'concepts': ['StateGraph', 'ToolNode', 'conditional_edges'],
+        'gotchas': ['Must call .compile()', 'Tavily rate limits']
+    },
+    'code_template': local_context['code_examples']['documents'][0],
+    'your_past_approach': 'research_agent_v1 - worked well, can reuse',
+    'implementation_steps': [
+        '1. Implement ReAct pattern',
+        '2. Setup StateGraph, ToolNode, conditional_edges',
+        '3. Use code template from similar agent',
+        '4. Watch out for: Must call .compile() before execution'
+    ],
+    'confidence': 0.92
+}
+
+# 3. Semantic Memory adds (learned best practices):
 semantic_context = {
     'best_practices': [
         'Use ReAct for iterative research tasks',
@@ -2153,25 +3005,39 @@ semantic_context = {
     }
 }
 
-# 4. Reasoning synthesizes all contexts:
+# 4. Reasoning synthesizes ALL contexts:
 reasoning_output = """
-Based on:
-- Past success with ReAct pattern for analysis tasks (Episode #142)
-- Similar DocumentAnalyzer architecture in graph
-- LangGraph best practices from semantic memory
+SOURCES:
+✓ Hierarchical RAG (3 tiers):
+  - GLOBAL: ReAct pattern for research (from graph)
+  - BRIDGE: LangGraph StateGraph + gotchas (from graph + vector)
+  - LOCAL: Working code templates + your past research_agent_v1 (from vector)
+✓ Episodic: Past success with ReAct for analysis (Episode #142)
+✓ Semantic: LangGraph best practices
 
-Recommended approach:
-1. Use LangGraph with ReAct pattern
+RECOMMENDATION:
+1. Use LangGraph with ReAct pattern (confidence: 0.92)
 2. Create 3 tools: web_search, fetch_url, analyze_content
-3. Implement state management for research context
-4. Use conditional routing for iterative refinement
+3. Reuse your research_agent_v1 structure (it worked well)
+4. Use StateGraph with conditional routing
+5. Remember to call .compile() before execution!
+6. Watch Tavily rate limits (100/min)
 
-Confidence: 0.92 (high)
+CONFIDENCE: 0.92 (high) - Pattern proven successful in graph, you've used it before
 """
 
-# 5. Solution generated with full context
-# 6. Graph updated with new ResearchAgent architecture
+# 5. Solution generated with FULL multi-tier context
+# 6. Hierarchical RAG updated with new agent:
+#    - Vector store: Code embeddings added (LOCAL tier)
+#    - Graph store: New Agent node + relationships added (GLOBAL/BRIDGE tier)
+#    - Cross-indexed: Both stores linked bidirectionally
 ```
+
+**Key Advantage:** The hierarchical approach gives you:
+- **Global tier**: "What pattern should I use?" → ReAct for research tasks
+- **Bridge tier**: "How does that map to LangGraph?" → StateGraph + ToolNode + gotchas
+- **Local tier**: "Show me working code" → Your past solutions + templates
+- **All in one query** - No need to guess which level you need
 
 ---
 
