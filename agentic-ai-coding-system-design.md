@@ -399,29 +399,56 @@ Our unique approach combines cognitive architecture with agent-specific knowledg
 
 ---
 
-## 3. Agent Architecture
+## 3. Multi-Agent Architect System
 
-### 3.1 Orchestrator Agent
+### 3.0 System Overview: Six Specialized Architects
 
-**Role:** Master coordinator with cognitive capabilities
+**Core Philosophy:** The Agent AI Architect employs a **modular team of six specialized architect agents**, each with distinct expertise mapping directly to the agent development lifecycle—from analysis through implementation to quality assurance.
 
-**Responsibilities:**
-- Parse user intent and create task breakdown
-- Maintain visual to-do list with progress tracking
-- Route tasks to specialist agents based on complexity
-- Handle interactive approvals with three-tier permission system
-- Manage adaptive compute allocation (more time when needed)
-- Context compaction and session resumption
-- Coordinate cognitive systems across all agents
+**Why Six Architects?**
+- ✅ **Cognitive Diversity**: Mirrors real-world engineering teams (analysis → planning → coding → testing → review)
+- ✅ **HiRAG Optimization**: Each architect queries the appropriate RAG tier (Global/Bridge/Local)
+- ✅ **Compound Learning**: Each domain learns independently, making future builds progressively better
+- ✅ **Modularity**: Failures are localized; improvements are targeted
+- ✅ **Scalability**: Additional specialist architects can be added as needed
+
+| Architect | Primary Role | HiRAG Tier Focus | Output |
+|-----------|-------------|------------------|---------|
+| **Orchestrator Architect** | Master coordinator, workflow management | All tiers | Task routing, progress tracking |
+| **Analyzer Architect** | Pattern recognition, requirements analysis | GLOBAL + BRIDGE | Architectural insights, similar agents |
+| **Planning Architect** | System design, architectural blueprints | BRIDGE | Detailed implementation plan |
+| **Coding Architect** | Implementation, code generation | LOCAL | Working agent code |
+| **Testing Architect** | Validation, debugging, quality checks | LOCAL | Test results, bug fixes |
+| **Reviewing Architect** | Best practices, security, final quality gate | GLOBAL + BRIDGE | Quality report, improvements |
+
+---
+
+### 3.1 Orchestrator Architect
+
+**Role:** Master coordinator and workflow orchestrator—the "brain" of the entire system
+
+**Core Responsibilities:**
+1. **Intent Parsing**: Interpret user requests and extract key concepts (pattern, framework, tools, complexity)
+2. **Task Decomposition**: Break complex goals into structured sub-tasks with dependencies
+3. **Workflow Routing**: Route tasks to specialist architects based on expertise and task requirements
+4. **Progress Tracking**: Maintain live progress dashboard with task status and blockers
+5. **Approval Management**: Handle human-in-the-loop gates at critical decision points
+6. **Resource Allocation**: Dynamically allocate compute and context based on task complexity
+7. **Result Aggregation**: Synthesize outputs from all architects into cohesive solutions
+8. **Memory Management**: Coordinate memory compaction, checkpointing, and session resumption
+9. **Error Recovery**: Handle failures and route corrections back to appropriate architects
+
+**Why Essential:**
+Without an explicit orchestrator, architects would need distributed consensus or direct message-passing, creating coordination complexity and reducing observability. The orchestrator provides centralized control, clear audit trails, and simplified human interaction.
 
 **Model:** Llama 3.1 70B or Qwen 2.5 72B
 
 **Cognitive Configuration:**
 ```python
-orchestrator_config = {
+orchestrator_architect_config = {
     'memory': {
         'working': WorkingMemory(max_tokens=12000),  # Larger for coordination
-        'episodic_focus': ['workflow_patterns', 'agent_routing_decisions'],
+        'episodic_focus': ['workflow_patterns', 'routing_decisions', 'user_preferences'],
         'semantic_priority': ['orchestration', 'delegation', 'task_decomposition']
     },
     'reasoning': {
@@ -430,171 +457,801 @@ orchestrator_config = {
         'reflection_frequency': 'per_task'
     },
     'learning': {
-        'learn_from': ['routing_decisions', 'workflow_effectiveness'],
+        'learn_from': ['routing_decisions', 'workflow_effectiveness', 'time_estimates'],
         'optimize_for': 'task_completion_speed',
         'curriculum_level': 'advanced'
+    },
+    'hirag_usage': {
+        'queries_all_tiers': True,
+        'primary_use': 'workflow pattern discovery',
+        'stores': 'workflow success/failure patterns'
     }
 }
 ```
 
-**Key Methods:**
+**Workflow Example:**
 ```python
-class OrchestratorAgent(CognitiveAgent):
-    async def orchestrate(self, user_request):
-        # Parse and understand
+class OrchestratorArchitect(CognitiveAgent):
+    async def orchestrate(self, user_request: str):
+        """
+        Master orchestration workflow
+        """
+        # === STEP 1: Parse Intent ===
         task = await self.parse_request(user_request)
+        concepts = self.extract_concepts(task)  # pattern, framework, tools, complexity
         
-        # Check reactive reasoning first
+        # === STEP 2: Check Reactive Patterns ===
         if quick_route := self.reasoning['reactive'].react(task):
+            # Known workflow - execute immediately
             return await quick_route.execute()
         
-        # Deliberative planning for complex tasks
-        plan = await self.reasoning['deliberative'].create_plan(task)
+        # === STEP 3: Query HiRAG for Similar Past Workflows ===
+        similar_workflows = await self.hirag.search_workflows(
+            query=task.description,
+            filters={'outcome': 'success', 'similarity': 0.7}
+        )
         
-        # Get user approval
-        if not await self.get_user_approval(plan):
+        # === STEP 4: Deliberative Planning for Complex Tasks ===
+        plan = await self.reasoning['deliberative'].create_plan(
+            task=task,
+            context={
+                'similar_workflows': similar_workflows,
+                'complexity': concepts.complexity,
+                'frameworks': concepts.frameworks
+            }
+        )
+        
+        # === STEP 5: Human Approval (if needed) ===
+        if plan.requires_approval and not await self.get_user_approval(plan):
             return await self.handle_rejection(plan)
         
-        # Execute with progress tracking
-        result = await self.execute_plan_with_tracking(plan)
+        # === STEP 6: Route to Architects ===
+        workflow = [
+            ('analyzer', 'Analyze requirements and patterns'),
+            ('planner', 'Create architectural blueprint'),
+            ('coder', 'Implement agent code'),
+            ('tester', 'Validate and debug'),
+            ('reviewer', 'Final quality check')
+        ]
         
-        # Reflect and learn
-        await self.reasoning['reflective'].reflect(task, result)
+        results = {}
+        for architect_name, description in workflow:
+            print(f"🏗️ Routing to {architect_name}: {description}")
+            results[architect_name] = await self.route_to_architect(
+                architect=architect_name,
+                task=task,
+                context=results  # Pass accumulated results
+            )
+            
+            # Check for blocking issues
+            if results[architect_name].status == 'blocked':
+                return await self.handle_blocker(architect_name, results)
         
-        return result
+        # === STEP 7: Aggregate Results ===
+        final_result = self.synthesize_results(results)
+        
+        # === STEP 8: Reflect and Learn ===
+        await self.reasoning['reflective'].reflect(task, final_result)
+        
+        # === STEP 9: Store in HiRAG ===
+        await self.store_workflow(task, workflow, results, final_result)
+        
+        return final_result
+    
+    async def route_to_architect(self, architect: str, task: Task, context: dict):
+        """Route task to specialist architect"""
+        architect_agent = self.get_architect(architect)
+        return await architect_agent.process(task, context)
 ```
 
-### 3.2 Analyzer Agent
+---
 
-**Role:** Code comprehension and pattern recognition specialist
+### 3.2 Analyzer Architect
+
+**Role:** Requirements analysis, pattern recognition, and architectural assessment specialist
+
+**Core Responsibilities:**
+1. **Requirement Analysis**: Parse user requests into structured concepts (patterns, frameworks, tools)
+2. **Pattern Recognition**: Identify which agent patterns fit the requirements (ReAct, Supervisor, etc.)
+3. **HiRAG Global Query**: Query knowledge graph for high-level patterns and past similar builds
+4. **Dependency Analysis**: Determine required tools, APIs, and framework dependencies
+5. **Complexity Assessment**: Evaluate task complexity and recommend team composition
+6. **Architecture Evaluation**: Assess past agent architectures for reusability
+7. **Gotcha Detection**: Surface common pitfalls and warnings for chosen patterns
+
+**Why Critical:**
+The Analyzer is the "knowledge gateway" - it's responsible for effective HiRAG querying to surface the most relevant patterns and past solutions. Without deep analysis, later architects work with incomplete context.
+
+**Model:** Llama 3.1 70B or Qwen 2.5 72B
 
 **Cognitive Configuration:**
 ```python
-analyzer_config = {
+analyzer_architect_config = {
     'memory': {
-        'working': WorkingMemory(max_tokens=8000),
-        'episodic_focus': ['code_patterns', 'agent_architectures_analyzed'],
-        'semantic_priority': ['agent_patterns', 'framework_syntax', 'anti_patterns']
+        'working': WorkingMemory(max_tokens=10000),
+        'episodic_focus': ['pattern_analyses', 'architectural_assessments', 'requirement_extractions'],
+        'semantic_priority': ['agent_patterns', 'framework_concepts', 'anti_patterns', 'design_principles']
     },
     'reasoning': {
-        'reactive_patterns': ['common_agent_structures', 'framework_detection'],
-        'deliberative_focus': 'architectural_analysis',
-        'uses_graph_rag': True  # Heavy Graph RAG user
+        'reactive_patterns': ['common_agent_structures', 'framework_detection', 'pattern_matching'],
+        'deliberative_focus': 'deep_architectural_analysis',
+        'uses_graph_rag': True  # Heavy HiRAG GLOBAL + BRIDGE user
     },
     'learning': {
-        'learn_from': ['pattern_recognition_accuracy', 'analysis_completeness'],
+        'learn_from': ['pattern_recognition_accuracy', 'analysis_completeness', 'query_effectiveness'],
         'optimize_for': 'depth_of_understanding'
+    },
+    'hirag_usage': {
+        'primary_tiers': ['GLOBAL', 'BRIDGE'],
+        'queries': [
+            'find_patterns_for_use_case',
+            'get_similar_past_agents',
+            'retrieve_gotchas',
+            'analyze_dependencies'
+        ],
+        'stores': 'pattern recognition insights and requirement analyses'
     }
 }
 ```
 
-**Key Capabilities:**
-- AST-level code parsing with tree-sitter
-- Agent architecture pattern recognition
-- Framework-specific analysis (LangGraph, CrewAI, AutoGen)
-- Dependency and impact analysis via Graph RAG
-- Tool integration pattern detection
+**Key Tools:**
+- `query_hirag_global(query: str) → Patterns` - Get high-level patterns from graph
+- `search_similar_agents(requirements: dict) → List[Agent]` - Find past similar builds
+- `analyze_dependencies(requirements: dict) → Dependencies` - Extract tool/framework needs
+- `extract_concepts(user_request: str) → Concepts` - Parse structured requirements
+- `get_gotchas(pattern: str, framework: str) → List[Gotcha]` - Retrieve warnings
+- `assess_complexity(requirements: dict) → ComplexityScore` - Evaluate task difficulty
 
-### 3.3 Planner Agent
+**Analysis Workflow:**
+```python
+class AnalyzerArchitect(CognitiveAgent):
+    async def analyze(self, task: Task, context: dict):
+        """
+        Deep requirement and pattern analysis
+        """
+        # === STEP 1: Extract Concepts ===
+        concepts = self.extract_concepts(task.description)
+        # Returns: {pattern_type, use_case, framework, tools, complexity}
+        
+        # === STEP 2: Query HiRAG GLOBAL - Find Patterns ===
+        patterns = await self.hirag.query_global(
+            query=f"patterns for {concepts.use_case}",
+            context=concepts
+        )
+        
+        # === STEP 3: Search Similar Past Agents ===
+        similar_agents = await self.hirag.search_agents(
+            requirements=concepts,
+            min_similarity=0.7,
+            outcome='success'
+        )
+        
+        # === STEP 4: Query HiRAG BRIDGE - Framework Mappings ===
+        framework_details = await self.hirag.query_bridge(
+            pattern=patterns[0].name,
+            framework=concepts.framework
+        )
+        
+        # === STEP 5: Get Gotchas ===
+        gotchas = await self.hirag.get_gotchas(
+            pattern=patterns[0].name,
+            framework=concepts.framework
+        )
+        
+        # === STEP 6: Synthesize Analysis ===
+        analysis = {
+            'concepts': concepts,
+            'recommended_patterns': patterns[:3],
+            'similar_past_builds': similar_agents[:5],
+            'framework_mappings': framework_details,
+            'gotchas': gotchas,
+            'complexity_assessment': self.assess_complexity(concepts),
+            'confidence': self.calculate_confidence(patterns, similar_agents)
+        }
+        
+        return AnalysisResult(
+            status='complete',
+            data=analysis,
+            recommendations=self.generate_recommendations(analysis)
+        )
+```
 
-**Role:** Strategic planning and design
+---
+
+### 3.3 Planning Architect
+
+**Role:** Strategic system design and architectural blueprint creation
+
+**Core Responsibilities:**
+1. **Architecture Design**: Create detailed agent system architectures based on analysis
+2. **Pattern Selection**: Choose optimal patterns (ReAct, Supervisor, Hierarchical, etc.)
+3. **Framework Mapping**: Map abstract patterns to framework-specific implementations
+4. **Task Decomposition**: Break complex agent systems into buildable components
+5. **State Design**: Design state management schemas and data flows
+6. **Communication Planning**: Define agent-to-agent communication protocols
+7. **Tool Integration Planning**: Specify tool integrations and API dependencies
+8. **Implementation Sequencing**: Order implementation steps for optimal workflow
+
+**Why Critical:**
+The Planning Architect translates analysis into actionable blueprints. It bridges the gap between "what to build" (from Analyzer) and "how to build it" (for Coder).
+
+**Model:** Llama 3.1 70B or Qwen 2.5 72B
 
 **Cognitive Configuration:**
 ```python
-planner_config = {
+planning_architect_config = {
     'memory': {
         'working': WorkingMemory(max_tokens=10000),
-        'episodic_focus': ['successful_plans', 'plan_modifications'],
-        'semantic_priority': ['design_patterns', 'architecture_principles', 'planning_strategies']
+        'episodic_focus': ['successful_plans', 'plan_modifications', 'design_decisions'],
+        'semantic_priority': ['design_patterns', 'architecture_principles', 'planning_strategies', 'state_schemas']
     },
     'reasoning': {
-        'reactive_patterns': ['common_agentic_architectures'],
+        'reactive_patterns': ['common_agentic_architectures', 'standard_state_schemas'],
         'deliberative_focus': 'multi_step_planning',
         'uses_episodic_heavily': True  # Learns from past plans
     },
     'learning': {
-        'learn_from': ['plan_execution_success', 'time_estimates_accuracy'],
+        'learn_from': ['plan_execution_success', 'time_estimates_accuracy', 'architecture_quality'],
         'optimize_for': 'plan_quality'
+    },
+    'hirag_usage': {
+        'primary_tier': 'BRIDGE',
+        'queries': [
+            'map_pattern_to_framework',
+            'get_framework_concepts',
+            'retrieve_state_schemas',
+            'find_communication_patterns'
+        ],
+        'stores': 'architectural plans and design decisions'
     }
 }
 ```
 
-### 3.4 Coder Agent
+**Key Tools:**
+- `query_hirag_bridge(pattern: str, framework: str) → Mappings` - Get framework-specific implementations
+- `get_state_schema_examples(pattern: str) → List[Schema]` - Retrieve state management patterns
+- `design_architecture(analysis: dict) → Blueprint` - Create detailed architecture
+- `decompose_into_tasks(architecture: dict) → List[Task]` - Break down implementation
+- `estimate_complexity(plan: Plan) → ComplexityScore` - Assess implementation difficulty
+- `validate_plan(plan: Plan) → ValidationResult` - Check plan completeness
 
-**Role:** Code generation and implementation
+**Planning Workflow:**
+```python
+class PlanningArchitect(CognitiveAgent):
+    async def plan(self, task: Task, analysis: AnalysisResult):
+        """
+        Create detailed architectural blueprint
+        """
+        # === STEP 1: Query HiRAG BRIDGE - Framework Mappings ===
+        framework_impl = await self.hirag.query_bridge(
+            pattern=analysis.recommended_patterns[0].name,
+            framework=analysis.concepts.framework
+        )
+        
+        # === STEP 2: Design State Schema ===
+        state_schema = self.design_state_schema(
+            pattern=analysis.recommended_patterns[0],
+            requirements=analysis.concepts
+        )
+        
+        # === STEP 3: Plan Tool Integrations ===
+        tool_plan = self.plan_tool_integrations(
+            required_tools=analysis.concepts.tools,
+            framework=analysis.concepts.framework
+        )
+        
+        # === STEP 4: Design Communication (if multi-agent) ===
+        if analysis.complexity.is_multi_agent:
+            comm_design = self.design_communication_protocol(
+                agent_count=analysis.complexity.estimated_agents,
+                pattern=analysis.recommended_patterns[0]
+            )
+        else:
+            comm_design = None
+        
+        # === STEP 5: Create Implementation Sequence ===
+        implementation_steps = [
+            'Setup project structure',
+            'Implement state schema',
+            'Create agent nodes',
+            'Add tool integrations',
+            'Setup routing/edges',
+            'Add error handling',
+            'Implement checkpointing'
+        ]
+        
+        # === STEP 6: Generate Blueprint ===
+        blueprint = {
+            'architecture': {
+                'pattern': analysis.recommended_patterns[0],
+                'framework': analysis.concepts.framework,
+                'state_schema': state_schema,
+                'agents': self.define_agents(analysis),
+                'tools': tool_plan,
+                'communication': comm_design
+            },
+            'implementation_sequence': implementation_steps,
+            'estimated_complexity': self.estimate_complexity(analysis),
+            'gotchas_to_watch': analysis.gotchas,
+            'success_probability': 0.85
+        }
+        
+        return PlanningResult(
+            status='complete',
+            blueprint=blueprint,
+            estimated_time=self.estimate_time(blueprint)
+        )
+```
+
+---
+
+### 3.4 Coding Architect
+
+**Role:** Implementation specialist and code generation expert
+
+**Core Responsibilities:**
+1. **Code Generation**: Generate working agent code from architectural blueprints
+2. **Framework Implementation**: Translate designs into framework-specific code (LangGraph, CrewAI)
+3. **Tool Integration**: Implement tool calling and API integrations
+4. **State Management**: Implement state schemas and data flow
+5. **Error Handling**: Add robust error handling and edge case management
+6. **Code Validation**: Ensure syntax correctness and import resolution
+7. **Documentation**: Generate inline comments and usage documentation
+
+**Why Critical:**
+The Coding Architect transforms abstract plans into concrete, runnable code. It heavily uses HiRAG LOCAL tier to retrieve working code examples and your past solutions.
 
 **Model:** DeepSeek Coder V2 33B (specialized for code generation)
 
 **Cognitive Configuration:**
 ```python
-coder_config = {
+coding_architect_config = {
     'memory': {
         'working': WorkingMemory(max_tokens=8000),
-        'episodic_focus': ['successful_implementations', 'code_patterns'],
-        'semantic_priority': ['syntax', 'idioms', 'framework_apis']
+        'episodic_focus': ['successful_implementations', 'code_patterns', 'bug_fixes'],
+        'semantic_priority': ['syntax', 'idioms', 'framework_apis', 'best_practices']
     },
     'reasoning': {
-        'reactive_patterns': ['boilerplate_generation', 'common_structures'],
+        'reactive_patterns': ['boilerplate_generation', 'common_structures', 'standard_imports'],
         'deliberative_focus': 'complex_logic_implementation',
         'uses_procedural_memory': True  # Heavy procedural memory use
     },
     'learning': {
-        'learn_from': ['code_quality_scores', 'bug_frequency'],
+        'learn_from': ['code_quality_scores', 'bug_frequency', 'test_pass_rate'],
         'optimize_for': 'code_correctness',
         'fine_tune_priority': 'high'  # Benefits most from fine-tuning
+    },
+    'hirag_usage': {
+        'primary_tier': 'LOCAL',
+        'queries': [
+            'get_code_examples',
+            'find_your_past_solutions',
+            'retrieve_boilerplate',
+            'get_working_implementations'
+        ],
+        'stores': 'all generated code and implementations'
     }
 }
 ```
 
-### 3.5 Test/Debug Agent
+**Key Tools:**
+- `query_hirag_local(query: str, framework: str) → CodeExamples` - Get working code from vector store
+- `generate_code(blueprint: dict, examples: List) → Code` - Generate implementation
+- `integrate_tool(tool_name: str, agent_code: str) → Code` - Add tool to agent
+- `validate_syntax(code: str) → ValidationResult` - Check code correctness
+- `resolve_imports(code: str) → List[Import]` - Fix import issues
+- `write_file(path: str, content: str) → bool` - Save generated code
 
-**Role:** Validation and troubleshooting
+---
+
+### 3.5 Testing Architect
+
+**Role:** Validation, debugging, and quality assurance specialist
+
+**Core Responsibilities:**
+1. **Unit Testing**: Create and run unit tests for agent components
+2. **Integration Testing**: Test agent-to-agent communication and workflows
+3. **Edge Case Testing**: Identify and test boundary conditions
+4. **Bug Detection**: Find syntax errors, logic bugs, and runtime issues
+5. **Debugging**: Diagnose failures and route fixes back to Coding Architect
+6. **Performance Testing**: Validate response times and resource usage
+7. **Regression Testing**: Ensure changes don't break existing functionality
+
+**Why Critical:**
+The Testing Architect ensures code quality before it reaches users. It catches issues early, reducing iteration cycles and building confidence in generated agents.
 
 **Model:** Qwen 2.5 Coder 32B
 
 **Cognitive Configuration:**
 ```python
-test_config = {
+testing_architect_config = {
     'memory': {
         'working': WorkingMemory(max_tokens=6000),
-        'episodic_focus': ['test_strategies', 'bug_patterns'],
-        'semantic_priority': ['testing_frameworks', 'edge_cases', 'error_patterns']
+        'episodic_focus': ['test_strategies', 'bug_patterns', 'failure_modes'],
+        'semantic_priority': ['testing_frameworks', 'edge_cases', 'error_patterns', 'debugging_strategies']
     },
     'reasoning': {
-        'reactive_patterns': ['common_test_structures', 'known_bugs'],
+        'reactive_patterns': ['common_test_structures', 'known_bugs', 'standard_assertions'],
         'deliberative_focus': 'debugging_strategy',
         'reflection_focus': 'test_coverage_improvement'
     },
     'learning': {
-        'learn_from': ['test_effectiveness', 'bug_detection_rate'],
+        'learn_from': ['test_effectiveness', 'bug_detection_rate', 'false_positive_rate'],
         'optimize_for': 'test_coverage'
+    },
+    'hirag_usage': {
+        'primary_tier': 'LOCAL',
+        'queries': [
+            'get_test_patterns',
+            'find_similar_bugs',
+            'retrieve_edge_cases'
+        ],
+        'stores': 'test strategies, bugs found, and fixes applied'
     }
 }
 ```
 
-### 3.6 Reviewer Agent
+**Key Tools:**
+- `run_tests(code: str, test_type: str) → TestResults` - Execute tests
+- `validate_imports(code: str) → List[MissingImport]` - Check import issues
+- `check_edge_cases(code: str) → List[Issue]` - Identify potential problems
+- `debug_error(error: str, code: str) → Fix` - Diagnose and suggest fixes
+- `generate_tests(code: str) → TestCode` - Create test cases
+- `check_coverage(code: str, tests: str) → CoverageReport` - Measure test coverage
 
-**Role:** Quality assurance and best practices enforcement
+---
+
+### 3.6 Reviewing Architect
+
+**Role:** Quality assurance, best practices enforcement, and final validation
+
+**Core Responsibilities:**
+1. **Code Review**: Evaluate code quality, readability, and maintainability
+2. **Best Practices**: Ensure adherence to framework and language best practices
+3. **Security Analysis**: Check for common security vulnerabilities
+4. **Architecture Review**: Validate architectural decisions and pattern usage
+5. **Performance Review**: Assess efficiency and resource usage
+6. **Documentation Review**: Ensure adequate comments and usage docs
+7. **Improvement Suggestions**: Recommend refactorings and optimizations
+8. **Final Quality Gate**: Approve or reject for deployment
+
+**Why Critical:**
+The Reviewing Architect is the final quality gate before code reaches users. It catches issues that tests miss and ensures long-term maintainability.
+
+**Model:** Llama 3.1 70B or Qwen 2.5 72B
 
 **Cognitive Configuration:**
 ```python
-reviewer_config = {
+reviewing_architect_config = {
     'memory': {
         'working': WorkingMemory(max_tokens=8000),
-        'episodic_focus': ['review_findings', 'quality_improvements'],
-        'semantic_priority': ['best_practices', 'anti_patterns', 'security_patterns']
+        'episodic_focus': ['review_findings', 'quality_improvements', 'refactoring_patterns'],
+        'semantic_priority': ['best_practices', 'anti_patterns', 'security_patterns', 'code_quality']
     },
     'reasoning': {
-        'reactive_patterns': ['common_code_smells', 'security_issues'],
+        'reactive_patterns': ['common_code_smells', 'security_issues', 'style_violations'],
         'deliberative_focus': 'holistic_quality_assessment',
-        'critical_thinking': True
+        'critical_thinking': True,
+        'reflection_driven': True  # Always reflects on quality
     },
     'learning': {
-        'learn_from': ['review_accuracy', 'false_positive_rate'],
+        'learn_from': ['review_accuracy', 'false_positive_rate', 'improvement_impact'],
         'optimize_for': 'review_quality'
+    },
+    'hirag_usage': {
+        'primary_tiers': ['GLOBAL', 'BRIDGE'],
+        'queries': [
+            'get_best_practices',
+            'retrieve_security_patterns',
+            'find_quality_improvements'
+        ],
+        'stores': 'review findings and quality improvements'
     }
 }
 ```
+
+**Key Tools:**
+- `check_best_practices(code: str, framework: str) → List[Violation]` - Validate against standards
+- `security_scan(code: str) → List[SecurityIssue]` - Check security vulnerabilities
+- `suggest_improvements(code: str, pattern: str) → List[Suggestion]` - Recommend refactorings
+- `rate_quality(code: str) → QualityScore` - Assess overall code quality
+- `check_documentation(code: str) → DocScore` - Evaluate documentation completeness
+- `architectural_review(blueprint: dict, code: str) → ReviewResult` - Validate architecture adherence
+
+**Review Workflow:**
+```python
+class ReviewingArchitect(CognitiveAgent):
+    async def review(self, task: Task, code: str, blueprint: dict, test_results: TestResults):
+        """
+        Comprehensive quality review
+        """
+        # === STEP 1: Code Quality Check ===
+        quality_issues = await self.check_code_quality(code)
+        
+        # === STEP 2: Best Practices Validation ===
+        practice_violations = await self.check_best_practices(
+            code=code,
+            framework=blueprint['architecture']['framework']
+        )
+        
+        # === STEP 3: Security Scan ===
+        security_issues = await self.security_scan(code)
+        
+        # === STEP 4: Architecture Adherence ===
+        arch_review = await self.validate_architecture(
+            code=code,
+            blueprint=blueprint
+        )
+        
+        # === STEP 5: Performance Assessment ===
+        perf_issues = await self.assess_performance(code)
+        
+        # === STEP 6: Documentation Review ===
+        doc_score = await self.check_documentation(code)
+        
+        # === STEP 7: Generate Improvement Suggestions ===
+        improvements = await self.suggest_improvements(
+            code=code,
+            issues=[*quality_issues, *practice_violations, *security_issues, *perf_issues]
+        )
+        
+        # === STEP 8: Calculate Quality Score ===
+        quality_score = self.calculate_quality_score(
+            code_quality=len(quality_issues),
+            security=len(security_issues),
+            tests=test_results.coverage,
+            documentation=doc_score
+        )
+        
+        # === STEP 9: Approve or Reject ===
+        decision = 'APPROVED' if quality_score >= 0.8 else 'NEEDS_REVISION'
+        
+        return ReviewResult(
+            decision=decision,
+            quality_score=quality_score,
+            issues={
+                'quality': quality_issues,
+                'practices': practice_violations,
+                'security': security_issues,
+                'performance': perf_issues
+            },
+            improvements=improvements,
+            recommendations=self.generate_recommendations(quality_score)
+        )
+```
+
+---
+
+### 3.7 Complete Multi-Architect Workflow
+
+**End-to-End Example: Building a Research Agent**
+
+```python
+# === USER REQUEST ===
+user_request = "Create a LangGraph research agent with web search and PDF analysis"
+
+# === ORCHESTRATOR ARCHITECT: Master Coordination ===
+orchestrator = OrchestratorArchitect()
+task = await orchestrator.parse_request(user_request)
+workflow_plan = await orchestrator.create_workflow_plan(task)
+
+print("🎯 Workflow Plan:")
+print("1. Analyzer → Analyze requirements and patterns")
+print("2. Planner → Create architectural blueprint")
+print("3. Coder → Implement agent code")
+print("4. Tester → Validate and debug")
+print("5. Reviewer → Final quality check")
+
+# === ANALYZER ARCHITECT: Deep Analysis ===
+analyzer = AnalyzerArchitect()
+analysis = await analyzer.analyze(task, context={})
+
+"""
+Analysis Output:
+{
+    'concepts': {
+        'pattern': 'ReAct',
+        'framework': 'langgraph',
+        'tools': ['web_search', 'pdf_reader'],
+        'complexity': 'medium'
+    },
+    'recommended_patterns': [ReAct, Tool-Calling],
+    'similar_past_builds': [research_agent_v1, document_analyzer],
+    'framework_mappings': {
+        'StateGraph': 'core_structure',
+        'ToolNode': 'tool_integration',
+        'conditional_edges': 'routing_logic'
+    },
+    'gotchas': [
+        'Must call .compile() before execution',
+        'Tavily rate limits: 100/min'
+    ],
+    'confidence': 0.92
+}
+"""
+
+# === PLANNING ARCHITECT: Architectural Blueprint ===
+planner = PlanningArchitect()
+blueprint = await planner.plan(task, analysis)
+
+"""
+Blueprint Output:
+{
+    'architecture': {
+        'pattern': 'ReAct',
+        'framework': 'langgraph',
+        'state_schema': {
+            'messages': 'List[BaseMessage]',
+            'research_results': 'List[Document]',
+            'current_step': 'str'
+        },
+        'agents': ['research_node', 'tool_node'],
+        'tools': ['web_search', 'pdf_reader'],
+        'routing': 'conditional_edges based on tool calls'
+    },
+    'implementation_sequence': [
+        'Setup StateGraph with TypedDict',
+        'Create research node function',
+        'Add ToolNode with tools',
+        'Setup conditional edges',
+        'Add compile() call'
+    ],
+    'estimated_time': '45 minutes'
+}
+"""
+
+# === CODING ARCHITECT: Implementation ===
+coder = CodingArchitect()
+code = await coder.generate_code(blueprint, analysis)
+
+"""
+Generated Code (abbreviated):
+```python
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode
+from typing import TypedDict, List
+
+class AgentState(TypedDict):
+    messages: List[BaseMessage]
+    research_results: List[Document]
+    current_step: str
+
+# Research node
+async def research_node(state: AgentState):
+    # Use LLM with tools
+    result = await llm_with_tools.ainvoke(state["messages"])
+    return {"messages": [result]}
+
+# Tools
+tools = [web_search, pdf_reader]
+
+# Build graph
+graph = StateGraph(AgentState)
+graph.add_node("research", research_node)
+graph.add_node("tools", ToolNode(tools))
+
+# Routing
+graph.add_conditional_edges(
+    "research",
+    should_continue,
+    {"continue": "tools", "end": END}
+)
+graph.add_edge("tools", "research")
+graph.set_entry_point("research")
+
+# Compile (gotcha handled!)
+app = graph.compile()
+```
+"""
+
+# === TESTING ARCHITECT: Validation ===
+tester = TestingArchitect()
+test_results = await tester.test(code, blueprint)
+
+"""
+Test Results:
+{
+    'unit_tests': {'passed': 8, 'failed': 0},
+    'integration_tests': {'passed': 3, 'failed': 0},
+    'edge_cases': {'passed': 5, 'failed': 0},
+    'coverage': 0.92,
+    'bugs_found': [],
+    'status': 'PASSED'
+}
+"""
+
+# === REVIEWING ARCHITECT: Quality Gate ===
+reviewer = ReviewingArchitect()
+review = await reviewer.review(task, code, blueprint, test_results)
+
+"""
+Review Result:
+{
+    'decision': 'APPROVED',
+    'quality_score': 0.88,
+    'issues': {
+        'quality': [],
+        'security': [],
+        'performance': ['Consider caching search results'],
+        'documentation': ['Add docstrings to research_node']
+    },
+    'improvements': [
+        'Add result caching for repeated queries',
+        'Implement retry logic for rate limits',
+        'Add more detailed logging'
+    ],
+    'recommendations': 'High-quality implementation. Minor improvements suggested.'
+}
+"""
+
+# === ORCHESTRATOR: Final Aggregation ===
+final_result = await orchestrator.aggregate_results({
+    'analysis': analysis,
+    'blueprint': blueprint,
+    'code': code,
+    'tests': test_results,
+    'review': review
+})
+
+# === STORE IN HIRAG (Self-Updating) ===
+await orchestrator.store_in_hirag(
+    agent_code=code,
+    metadata={
+        'name': 'research_agent_v2',
+        'pattern': 'ReAct',
+        'framework': 'langgraph',
+        'tools': ['web_search', 'pdf_reader'],
+        'outcome': 'success',
+        'quality_score': 0.88,
+        'your_rating': 4.5
+    }
+)
+
+print("✅ Research agent created successfully!")
+print(f"⭐ Quality Score: {review['quality_score']}")
+print(f"📊 Test Coverage: {test_results['coverage']*100}%")
+print(f"🎯 Confidence: {analysis['confidence']*100}%")
+```
+
+---
+
+### 3.8 Advantages of Six-Architect System
+
+**1. Cognitive Diversity**
+- Each architect develops specialized expertise in its domain
+- Mimics real-world engineering team dynamics
+- Reduces cognitive load on any single agent
+
+**2. HiRAG Optimization**
+- Analyzer → GLOBAL + BRIDGE (patterns, frameworks)
+- Planner → BRIDGE (mappings, concepts)
+- Coder → LOCAL (code examples)
+- Tester → LOCAL (test patterns, bugs)
+- Reviewer → GLOBAL + BRIDGE (best practices)
+
+**3. Compound Learning**
+- Analyzer learns pattern recognition
+- Planner learns architecture design
+- Coder learns implementation strategies
+- Tester learns bug patterns
+- Reviewer learns quality standards
+- Each domain improves independently
+
+**4. Failure Localization**
+- If code fails tests → Coder and Tester iterate
+- If review fails → Reviewer and Coder iterate
+- If analysis is weak → Analyzer improves
+- Clear responsibility boundaries
+
+**5. Extensibility**
+- Add domain specialists (e.g., SecurityArchitect, PerformanceArchitect)
+- Scale Orchestrator for more complex workflows
+- Add MetaArchitect for system-level learning
+
+**6. Human-in-the-Loop Gates**
+- After Analyzer: "Does this pattern fit?"
+- After Planner: "Approve this architecture?"
+- After Reviewer: "Deploy this code?"
 
 ---
 
