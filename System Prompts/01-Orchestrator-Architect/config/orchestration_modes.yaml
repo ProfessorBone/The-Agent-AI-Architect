@@ -1,0 +1,304 @@
+# Orchestration Modes Configuration
+# Version: 2.4
+# Last Updated: October 12, 2025
+# Component: Mode Definitions & User Role Configuration
+# Parent System: Orchestrator Architect v2.4
+
+# =============================================================================
+# ORCHESTRATION MODES
+# =============================================================================
+# Four adaptive modes that change behavior based on complexity, risk, and past outcomes
+
+orchestration_modes:
+  EXPLORATORY:
+    description: "Novel patterns, unproven architectures, experimental builds"
+    context_budget: "MAXIMUM (16K+ tokens)"
+    approval_frequency: "Every major decision"
+    consensus_required: true
+    reasoning_depth: "DEEP (full chain-of-thought)"
+    risk_tolerance: "LOW"
+    communication_style: "PEDAGOGICAL"
+    trace_level: "VERBOSE"
+    escalation_threshold: 0.6
+    examples:
+      - "First-time multi-agent hierarchical system with custom tools"
+      - "Novel multi-modal agent with vision+audio processing"
+      - "Experimental agent framework not in episodic memory"
+    triggers:
+      - "task_context.complexity == 'novel'"
+      - "task_context.pattern_confidence < 0.6"
+      - "episodic_memory.similar_builds == 0"
+      - "user_request contains experimental keywords"
+    
+  STANDARD:
+    description: "Common patterns, proven frameworks, typical builds"
+    context_budget: "BALANCED (8K tokens)"
+    approval_frequency: "At phase boundaries"
+    consensus_required: false
+    reasoning_depth: "MODERATE"
+    risk_tolerance: "MEDIUM"
+    communication_style: "INFORMAL"
+    trace_level: "STANDARD"
+    escalation_threshold: 0.4
+    examples:
+      - "Standard LangGraph ReAct agent with web search"
+      - "Basic CrewAI research team"
+      - "Simple tool-calling agent with database access"
+    triggers:
+      - "task_context.complexity == 'standard'"
+      - "task_context.pattern_confidence >= 0.7"
+      - "episodic_memory.similar_builds >= 2"
+      - "proven framework with documented patterns"
+
+  CRITICAL:
+    description: "Production systems, enterprise deployments, high stakes"
+    context_budget: "MAXIMUM (16K+ tokens)"
+    approval_frequency: "Before every architect handoff"
+    consensus_required: true
+    reasoning_depth: "DEEP with audit trails"
+    risk_tolerance: "MINIMAL"
+    communication_style: "PROFESSIONAL"
+    trace_level: "AUDIT"
+    escalation_threshold: 0.8
+    examples:
+      - "Financial trading agent"
+      - "Healthcare decision support system"
+      - "Enterprise customer service automation"
+    triggers:
+      - "task_context.quality_requirement == 'enterprise'"
+      - "task_context.security_sensitive == true"
+      - "production deployment context"
+      - "user_role == 'ADMIN' and high_stakes == true"
+
+  RECOVERY:
+    description: "Previous build failed, debugging/fixing issues"
+    context_budget: "EXPANDED (include failure analysis)"
+    approval_frequency: "At each fix attempt"
+    consensus_required: true
+    reasoning_depth: "DEEP (root cause analysis)"
+    risk_tolerance: "LOW"
+    communication_style: "RESTORATIVE"
+    trace_level: "DEBUG"
+    escalation_threshold: 0.7
+    examples:
+      - "Fixing test failures in agent system"
+      - "Addressing security vulnerabilities"
+      - "Debugging multi-agent coordination issues"
+    triggers:
+      - "previous_build_status == 'failed'"
+      - "retry_count >= 1"
+      - "test_failure_rate > 0.3"
+      - "security_issue_detected == true"
+
+# =============================================================================
+# MODE SELECTION LOGIC
+# =============================================================================
+
+mode_selection:
+  priority_rules:
+    # Ordered by priority (first match wins)
+    - condition: "any(failure in past_outcomes for failure in ['test_failed', 'security_issue'])"
+      mode: "RECOVERY"
+      reason: "Previous failures detected, need recovery mode"
+      
+    - condition: "task_context.quality_requirement == 'enterprise' or task_context.security_sensitive"
+      mode: "CRITICAL"
+      reason: "High-stakes deployment requires critical mode"
+      
+    - condition: "task_context.complexity == 'novel' or task_context.pattern_confidence < 0.6"
+      mode: "EXPLORATORY"
+      reason: "Novel pattern requires exploratory mode"
+      
+    - condition: "default_case"
+      mode: "STANDARD"
+      reason: "Standard mode for typical patterns"
+
+  context_factors:
+    complexity:
+      simple: 0.2
+      medium: 0.5
+      complex: 0.8
+      novel: 1.0
+      
+    pattern_confidence:
+      high: 0.9
+      medium: 0.7
+      low: 0.5
+      unknown: 0.3
+      
+    risk_level:
+      minimal: 0.1
+      low: 0.3
+      medium: 0.6
+      high: 0.9
+
+# =============================================================================
+# USER ROLE TIERS
+# =============================================================================
+
+user_roles:
+  NOVICE:
+    description: "New to AI agents, needs guidance and education"
+    characteristics:
+      - "First-time agent builders"
+      - "Limited AI/ML background"
+      - "Prefers simple patterns"
+      - "Needs detailed explanations"
+    communication_preferences:
+      - style: "PEDAGOGICAL"
+      - explanation_depth: "DETAILED"
+      - examples_required: true
+      - approval_gates: "FREQUENT"
+    default_orchestration_mode: "EXPLORATORY"
+    escalation_threshold: 0.5
+    context_budget_modifier: 1.2  # Extra context for learning
+    
+  EXPERT:
+    description: "Experienced with AI agents, understands patterns"
+    characteristics:
+      - "Built multiple agent systems"
+      - "Understands LangGraph/CrewAI patterns"
+      - "Can handle complexity"
+      - "Values efficiency"
+    communication_preferences:
+      - style: "INFORMAL"
+      - explanation_depth: "MODERATE"
+      - examples_required: false
+      - approval_gates: "STANDARD"
+    default_orchestration_mode: "STANDARD"
+    escalation_threshold: 0.4
+    context_budget_modifier: 1.0  # Standard context
+    
+  ADMIN:
+    description: "System administrator or enterprise user"
+    characteristics:
+      - "Production deployments"
+      - "Security and compliance focus"
+      - "Risk-averse"
+      - "Audit trail requirements"
+    communication_preferences:
+      - style: "PROFESSIONAL"
+      - explanation_depth: "COMPREHENSIVE"
+      - examples_required: true
+      - approval_gates: "STRICT"
+    default_orchestration_mode: "CRITICAL"
+    escalation_threshold: 0.7
+    context_budget_modifier: 1.5  # Maximum context for audit
+
+# =============================================================================
+# ROLE DETECTION LOGIC
+# =============================================================================
+
+role_detection:
+  automatic_indicators:
+    NOVICE:
+      - "first time using this system"
+      - "new to AI agents"
+      - "simple pattern requests"
+      - "frequent questions about basics"
+      
+    EXPERT:
+      - "mentions specific frameworks (LangGraph, CrewAI)"
+      - "uses technical terminology correctly"
+      - "requests complex patterns"
+      - "demonstrates understanding of trade-offs"
+      
+    ADMIN:
+      - "mentions production/enterprise"
+      - "security/compliance requirements"
+      - "audit trail needs"
+      - "organizational deployment context"
+
+  manual_override:
+    enabled: true
+    command: "set_user_role"
+    valid_roles: ["NOVICE", "EXPERT", "ADMIN"]
+    requires_confirmation: true
+
+# =============================================================================
+# MODE TRANSITIONS
+# =============================================================================
+
+mode_transitions:
+  # When and how to switch between modes during a workflow
+  
+  escalation_triggers:
+    to_CRITICAL:
+      - "security_issue_detected"
+      - "production_deployment_mentioned"
+      - "enterprise_requirements_identified"
+      
+    to_RECOVERY:
+      - "test_failures_detected"
+      - "build_errors_encountered"
+      - "quality_threshold_not_met"
+      
+    to_EXPLORATORY:
+      - "pattern_not_recognized"
+      - "novel_requirements_identified"
+      - "consensus_failure"
+
+  de_escalation_triggers:
+    from_CRITICAL:
+      - "security_review_passed"
+      - "compliance_verified"
+      - "risk_assessment_complete"
+      
+    from_RECOVERY:
+      - "issues_resolved"
+      - "tests_passing"
+      - "quality_restored"
+      
+    from_EXPLORATORY:
+      - "pattern_identified"
+      - "similar_build_found"
+      - "confidence_threshold_met"
+
+# =============================================================================
+# CONFIGURATION VALIDATION
+# =============================================================================
+
+validation:
+  required_fields:
+    - "orchestration_modes"
+    - "user_roles"
+    - "mode_selection"
+    
+  mode_consistency_checks:
+    - "All modes have required fields"
+    - "Communication styles map to defined styles"
+    - "Escalation thresholds are between 0.0 and 1.0"
+    - "Context budgets are properly defined"
+    
+  role_consistency_checks:
+    - "All roles have default orchestration modes"
+    - "Escalation thresholds are valid"
+    - "Communication preferences are defined"
+
+# =============================================================================
+# INTEGRATION POINTS
+# =============================================================================
+
+integration:
+  module_dependencies:
+    - "behavioral_governance.md (orchestration workflow logic)"
+    - "communication_framework.md (style definitions)"
+    - "security_policies.md (security constraints)"
+    - "reasoning_vector_schema.json (decision logging)"
+    
+  dynamic_loading:
+    load_order: 2  # After security_policies.md
+    validation_required: true
+    fallback_mode: "STANDARD"
+    fallback_role: "EXPERT"
+    
+  configuration_override:
+    environment_variables:
+      - "ORCHESTRATOR_DEFAULT_MODE"
+      - "ORCHESTRATOR_DEFAULT_ROLE"
+      - "ORCHESTRATOR_ESCALATION_THRESHOLD"
+    
+    runtime_adjustments:
+      enabled: true
+      requires_approval: true
+      audit_logged: true

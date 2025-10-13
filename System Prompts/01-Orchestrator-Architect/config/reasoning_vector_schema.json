@@ -1,0 +1,623 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Reasoning Context Vector Schema",
+  "description": "JSON schema for reasoning context vectors that enable transparent decision lineage across architect handoffs",
+  "version": "2.4",
+  "lastUpdated": "2025-10-12",
+  "component": "Reasoning Vector & Consensus Logic",
+  "parentSystem": "Orchestrator Architect v2.4",
+  
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "UUID v4 format"
+    },
+    
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime format"
+    },
+    
+    "orchestration_mode": {
+      "type": "string",
+      "enum": ["EXPLORATORY", "STANDARD", "CRITICAL", "RECOVERY"],
+      "description": "Current orchestration mode determining behavior and risk tolerance"
+    },
+    
+    "architect_role": {
+      "type": "string",
+      "enum": ["analyzer", "prompt_engineer", "planner", "coder", "tester", "reviewer"],
+      "description": "Specialist architect roles in the workflow"
+    },
+    
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence level for decisions and assessments"
+    },
+    
+    "quality_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Quality assessment score for outputs"
+    }
+  },
+  
+  "type": "object",
+  "required": [
+    "task_id",
+    "task_description", 
+    "current_phase",
+    "orchestration_mode",
+    "decision_chain",
+    "metrics",
+    "audit_trail"
+  ],
+  
+  "properties": {
+    "task_context": {
+      "type": "object",
+      "description": "Core task identification and configuration",
+      "required": ["task_id", "task_description", "current_phase", "orchestration_mode"],
+      "properties": {
+        "task_id": {
+          "$ref": "#/definitions/uuid",
+          "description": "Unique identifier for this task execution"
+        },
+        "task_description": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 1000,
+          "description": "Natural language description of the user's request"
+        },
+        "current_phase": {
+          "type": "string",
+          "enum": ["parsing", "analysis", "prompt_optimization", "planning", "implementation", "testing", "review", "complete"],
+          "description": "Current workflow phase"
+        },
+        "orchestration_mode": {
+          "$ref": "#/definitions/orchestration_mode"
+        },
+        "user_role": {
+          "type": "string",
+          "enum": ["NOVICE", "EXPERT", "ADMIN"],
+          "description": "Detected or assigned user expertise level"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+          "default": "MEDIUM",
+          "description": "Task priority level"
+        }
+      }
+    },
+    
+    "decision_chain": {
+      "type": "array",
+      "description": "Chronological sequence of all decisions made during task execution",
+      "items": {
+        "type": "object",
+        "required": ["decision", "reasoning", "confidence", "timestamp"],
+        "properties": {
+          "decision": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500,
+            "description": "What decision was made"
+          },
+          "reasoning": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000,
+            "description": "Why this decision was made"
+          },
+          "confidence": {
+            "$ref": "#/definitions/confidence_score"
+          },
+          "alternatives_considered": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "description": "Other options that were evaluated"
+          },
+          "decision_maker": {
+            "type": "string",
+            "enum": ["orchestrator", "user", "consensus", "escalation"],
+            "description": "Who made this decision"
+          },
+          "timestamp": {
+            "$ref": "#/definitions/timestamp"
+          },
+          "impact_assessment": {
+            "type": "object",
+            "properties": {
+              "risk_level": {
+                "type": "string",
+                "enum": ["MINIMAL", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+              },
+              "affected_phases": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "reversible": {
+                "type": "boolean",
+                "description": "Whether this decision can be easily undone"
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "consensus_data": {
+      "type": "object",
+      "description": "Multi-architect consensus information for complex decisions",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether consensus was required for this task"
+        },
+        "participants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/architect_role"
+          },
+          "description": "Architects involved in consensus process"
+        },
+        "agreement_score": {
+          "$ref": "#/definitions/confidence_score",
+          "description": "Level of agreement among participants (0.0-1.0)"
+        },
+        "consensus_threshold": {
+          "$ref": "#/definitions/confidence_score",
+          "description": "Required threshold for consensus approval"
+        },
+        "decision_method": {
+          "type": "string",
+          "enum": ["unanimous", "majority", "weighted", "escalated"],
+          "description": "How consensus was reached"
+        },
+        "dissenting_opinions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "architect": {
+                "$ref": "#/definitions/architect_role"
+              },
+              "opinion": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "confidence": {
+                "$ref": "#/definitions/confidence_score"
+              },
+              "rationale": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          }
+        },
+        "consensus_timestamp": {
+          "$ref": "#/definitions/timestamp"
+        }
+      }
+    },
+    
+    "accumulated_context": {
+      "type": "object",
+      "description": "Progressive context buildup through workflow phases",
+      "properties": {
+        "analysis_results": {
+          "type": "object",
+          "description": "Output from Analyzer Architect",
+          "properties": {
+            "pattern_type": {
+              "type": "string",
+              "enum": ["ReAct", "Supervisor", "Hierarchical", "Tool-calling", "Multi-agent", "Custom"]
+            },
+            "framework_recommendation": {
+              "type": "string",
+              "enum": ["langgraph", "crewai", "autogen", "custom"]
+            },
+            "complexity_assessment": {
+              "type": "string",
+              "enum": ["simple", "medium", "complex", "novel"]
+            },
+            "similar_builds": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "build_id": {
+                    "type": "string"
+                  },
+                  "similarity_score": {
+                    "$ref": "#/definitions/confidence_score"
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": ["success", "failure", "partial"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        
+        "architectural_plan": {
+          "type": "object",
+          "description": "Output from Planning Architect",
+          "properties": {
+            "architecture_type": {
+              "type": "string"
+            },
+            "state_schema": {
+              "type": "object"
+            },
+            "agent_components": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"},
+                  "role": {"type": "string"},
+                  "tools": {"type": "array", "items": {"type": "string"}}
+                }
+              }
+            },
+            "data_flow": {
+              "type": "object"
+            }
+          }
+        },
+        
+        "code_artifacts": {
+          "type": "array",
+          "description": "Generated code and implementation details",
+          "items": {
+            "type": "object",
+            "properties": {
+              "artifact_type": {
+                "type": "string",
+                "enum": ["agent_code", "tool_implementation", "state_schema", "config_file", "test_file"]
+              },
+              "file_path": {
+                "type": "string"
+              },
+              "content_hash": {
+                "type": "string",
+                "description": "SHA-256 hash of content for integrity verification"
+              },
+              "lines_of_code": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "language": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        
+        "test_results": {
+          "type": "object",
+          "description": "Testing and validation outcomes",
+          "properties": {
+            "test_suite_runs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "test_type": {
+                    "type": "string",
+                    "enum": ["unit", "integration", "e2e", "performance", "security"]
+                  },
+                  "total_tests": {"type": "integer", "minimum": 0},
+                  "passed": {"type": "integer", "minimum": 0},
+                  "failed": {"type": "integer", "minimum": 0},
+                  "skipped": {"type": "integer", "minimum": 0},
+                  "execution_time": {"type": "number", "minimum": 0},
+                  "coverage": {"type": "number", "minimum": 0, "maximum": 100}
+                }
+              }
+            },
+            "overall_success_rate": {
+              "$ref": "#/definitions/confidence_score"
+            }
+          }
+        },
+        
+        "review_feedback": {
+          "type": "object",
+          "description": "Quality review and recommendations",
+          "properties": {
+            "code_quality_score": {
+              "$ref": "#/definitions/quality_score"
+            },
+            "security_assessment": {
+              "type": "object",
+              "properties": {
+                "security_score": {"$ref": "#/definitions/quality_score"},
+                "vulnerabilities_found": {"type": "integer", "minimum": 0},
+                "recommendations": {"type": "array", "items": {"type": "string"}}
+              }
+            },
+            "performance_assessment": {
+              "type": "object",
+              "properties": {
+                "performance_score": {"$ref": "#/definitions/quality_score"},
+                "bottlenecks_identified": {"type": "array", "items": {"type": "string"}},
+                "optimization_suggestions": {"type": "array", "items": {"type": "string"}}
+              }
+            },
+            "final_recommendation": {
+              "type": "string",
+              "enum": ["approve", "approve_with_conditions", "requires_revision", "reject"]
+            }
+          }
+        }
+      }
+    },
+    
+    "outcome_metrics": {
+      "type": "object",
+      "description": "Quantitative measures of workflow execution",
+      "required": ["phase_duration", "token_usage", "quality_score"],
+      "properties": {
+        "phase_duration": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Duration in seconds for this workflow phase"
+        },
+        "total_duration": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total workflow duration in seconds"
+        },
+        "token_usage": {
+          "type": "object",
+          "properties": {
+            "input_tokens": {"type": "integer", "minimum": 0},
+            "output_tokens": {"type": "integer", "minimum": 0},
+            "total_tokens": {"type": "integer", "minimum": 0},
+            "estimated_cost": {"type": "number", "minimum": 0}
+          }
+        },
+        "quality_score": {
+          "$ref": "#/definitions/quality_score",
+          "description": "Overall quality assessment of the workflow execution"
+        },
+        "user_satisfaction": {
+          "$ref": "#/definitions/confidence_score",
+          "description": "User approval rating for this workflow"
+        },
+        "approval_gates": {
+          "type": "object",
+          "properties": {
+            "total_approvals_required": {"type": "integer", "minimum": 0},
+            "approvals_received": {"type": "integer", "minimum": 0},
+            "approval_rate": {"$ref": "#/definitions/confidence_score"}
+          }
+        },
+        "revision_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of times work was revised or redone"
+        },
+        "escalation_count": {
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Number of times human intervention was required"
+        }
+      }
+    },
+    
+    "audit_trail": {
+      "type": "array",
+      "description": "Complete chronological log of all events and interactions",
+      "items": {
+        "type": "object",
+        "required": ["event", "actor", "timestamp"],
+        "properties": {
+          "event_id": {
+            "$ref": "#/definitions/uuid"
+          },
+          "event": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200,
+            "description": "What happened"
+          },
+          "event_type": {
+            "type": "string",
+            "enum": ["decision", "handoff", "approval", "escalation", "error", "completion", "user_interaction"],
+            "description": "Category of event"
+          },
+          "actor": {
+            "type": "string",
+            "enum": ["user", "orchestrator", "analyzer", "prompt_engineer", "planner", "coder", "tester", "reviewer", "system"],
+            "description": "Who performed this action"
+          },
+          "timestamp": {
+            "$ref": "#/definitions/timestamp"
+          },
+          "context": {
+            "type": "object",
+            "description": "Additional context specific to this event",
+            "properties": {
+              "phase": {"type": "string"},
+              "inputs": {"type": "object"},
+              "outputs": {"type": "object"},
+              "duration": {"type": "number"},
+              "error_details": {"type": "string"}
+            }
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Distributed tracing ID for correlation across systems"
+          }
+        }
+      }
+    },
+    
+    "escalation_data": {
+      "type": "object",
+      "description": "Information about escalations to human oversight",
+      "properties": {
+        "escalation_triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "trigger_type": {
+                "type": "string",
+                "enum": ["ambiguity", "risk", "consensus_failure", "repeated_failure", "novel_pattern", "quality_threshold"]
+              },
+              "trigger_timestamp": {"$ref": "#/definitions/timestamp"},
+              "threshold_value": {"type": "number"},
+              "actual_value": {"type": "number"},
+              "description": {"type": "string"}
+            }
+          }
+        },
+        "human_interventions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "intervention_type": {
+                "type": "string",
+                "enum": ["decision_override", "clarification", "approval", "rejection", "guidance"]
+              },
+              "timestamp": {"$ref": "#/definitions/timestamp"},
+              "decision": {"type": "string"},
+              "rationale": {"type": "string"},
+              "impact": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    
+    "learning_data": {
+      "type": "object",
+      "description": "Data for continuous learning and improvement",
+      "properties": {
+        "success_patterns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pattern_name": {"type": "string"},
+              "pattern_description": {"type": "string"},
+              "effectiveness_score": {"$ref": "#/definitions/confidence_score"},
+              "usage_count": {"type": "integer", "minimum": 0}
+            }
+          }
+        },
+        "failure_analysis": {
+          "type": "object",
+          "properties": {
+            "failure_points": {"type": "array", "items": {"type": "string"}},
+            "root_causes": {"type": "array", "items": {"type": "string"}},
+            "prevention_strategies": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "prompt_effectiveness": {
+          "type": "object",
+          "properties": {
+            "prompt_versions_used": {"type": "array", "items": {"type": "string"}},
+            "average_quality_by_prompt": {"type": "object"},
+            "optimization_suggestions": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    }
+  },
+  
+  "examples": [
+    {
+      "task_context": {
+        "task_id": "123e4567-e89b-12d3-a456-426614174000",
+        "task_description": "Create a LangGraph research agent with web search capabilities",
+        "current_phase": "implementation",
+        "orchestration_mode": "STANDARD",
+        "user_role": "EXPERT",
+        "priority": "MEDIUM"
+      },
+      "decision_chain": [
+        {
+          "decision": "Route to Analyzer for pattern recognition",
+          "reasoning": "Need to identify best architecture pattern for research agent",
+          "confidence": 0.9,
+          "alternatives_considered": ["Direct to planner", "Skip analysis"],
+          "decision_maker": "orchestrator",
+          "timestamp": "2025-10-12T10:30:00Z",
+          "impact_assessment": {
+            "risk_level": "LOW",
+            "affected_phases": ["planning", "implementation"],
+            "reversible": true
+          }
+        }
+      ],
+      "consensus_data": {
+        "required": false,
+        "agreement_score": 0.85
+      },
+      "outcome_metrics": {
+        "phase_duration": 45.2,
+        "token_usage": {
+          "input_tokens": 2500,
+          "output_tokens": 800,
+          "total_tokens": 3300,
+          "estimated_cost": 0.025
+        },
+        "quality_score": 0.92,
+        "revision_count": 0,
+        "escalation_count": 0
+      },
+      "audit_trail": [
+        {
+          "event": "User submitted request",
+          "event_type": "user_interaction", 
+          "actor": "user",
+          "timestamp": "2025-10-12T10:29:30Z",
+          "context": {
+            "phase": "parsing",
+            "inputs": {"request": "Create a LangGraph research agent"}
+          }
+        }
+      ]
+    }
+  ],
+  
+  "integration": {
+    "module_dependencies": [
+      "behavioral_governance.md (workflow orchestration)",
+      "orchestration_modes.yaml (mode definitions)",
+      "communication_framework.md (user interaction)",
+      "security_policies.md (audit requirements)"
+    ],
+    "dynamic_loading": {
+      "load_order": 4,
+      "validation_required": true,
+      "schema_validation": true
+    },
+    "data_persistence": {
+      "storage_format": "JSON",
+      "compression": "gzip",
+      "retention_policy": "90 days for detailed logs, 1 year for summaries",
+      "encryption": "AES-256 for sensitive data"
+    }
+  }
+}
