@@ -191,56 +191,67 @@ Our unique approach combines cognitive architecture with agent-specific knowledg
 ### 2.1 High-Level Overview
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│                    USER INTERFACE                          │
-│     CLI with Interactive Approval & Progress Tracking      │
-└──────────────────────────┬─────────────────────────────────┘
-                           │
-┌──────────────────────────▼─────────────────────────────────┐
-│                 ORCHESTRATOR AGENT                          │
-│  • Task Planning & Coordination                             │
-│  • Agent Selection & Routing                                │
-│  • Progress Tracking & Approval Management                  │
-│  • Adaptive Compute Allocation                              │
-└───┬─────────┬──────────┬──────────┬──────────┬─────────────┘
-    │         │          │          │          │
-┌───▼───┐ ┌──▼────┐ ┌───▼────┐ ┌───▼─────┐ ┌──▼──────┐
-│Analyzer│ │Planner│ │ Coder  │ │Test/    │ │Reviewer │
-│ Agent  │ │ Agent │ │ Agent  │ │Debug    │ │ Agent   │
-│        │ │       │ │        │ │Agent    │ │         │
-└───┬───┘ └──┬────┘ └───┬────┘ └───┬─────┘ └──┬──────┘
-    │        │          │          │          │
-    └────────┴──────────┴──────────┴──────────┘
-                       │
-┌──────────────────────▼─────────────────────────────────────┐
-│              COGNITIVE ARCHITECTURE                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │   Memory     │  │  Reasoning   │  │   Learning   │     │
-│  │   Systems    │  │   Systems    │  │   Systems    │     │
-│  │              │  │              │  │              │     │
-│  │ • Working    │  │ • Reactive   │  │ • Experience │     │
-│  │ • Episodic   │  │ • Deliberate │  │   Replay     │     │
-│  │ • Semantic   │  │ • Reflective │  │ • Meta-Learn │     │
-│  │ • Procedural │  │ • ReAct      │  │ • Curriculum │     │
-│  └──────────────┘  └──────────────┘  └──────────────┘     │
-└──────────────────────┬─────────────────────────────────────┘
-                       │
-┌──────────────────────▼─────────────────────────────────────┐
-│              KNOWLEDGE LAYER                                │
-│  ┌────────────────────────┐  ┌────────────────────────┐   │
-│  │    Graph RAG (Neo4j)   │  │  Vector Store (Chroma) │   │
-│  │                        │  │                        │   │
-│  │ • Agent architectures  │  │ • Semantic search      │   │
-│  │ • Tool relationships   │  │ • Documentation        │   │
-│  │ • State flows          │  │ • Error solutions      │   │
-│  │ • Dependencies         │  │ • Code examples        │   │
-│  └────────────────────────┘  └────────────────────────┘   │
-└──────────────────────┬─────────────────────────────────────┘
-                       │
-┌──────────────────────▼─────────────────────────────────────┐
-│                  TOOL LAYER                                 │
-│  File Ops | Git | Terminal | Language Servers | MCP        │
-└────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                      USER INTERFACE                            │
+│       CLI with Interactive Approval & Progress Tracking        │
+└────────────────────────────┬───────────────────────────────────┘
+                             │
+┌────────────────────────────▼───────────────────────────────────┐
+│                   ORCHESTRATOR ARCHITECT                        │
+│    • Task Planning & Coordination                               │
+│    • Agent Selection & Routing                                  │
+│    • Progress Tracking & Approval Management                    │
+│    • Adaptive Compute Allocation                                │
+└──┬────────┬──────────┬──────────┬──────────┬──────────┬────────┘
+   │        │          │          │          │          │
+┌──▼───┐┌──▼──────┐┌──▼──────┐┌──▼─────┐┌──▼──────┐┌──▼──────┐
+│Analyz││ Prompt  ││ Planner ││ Coder  ││Test/    ││Reviewer │
+│ er   ││Engineer ││ Archi-  ││ Archi- ││Debug    ││ Archi-  │
+│Archi-││ Archi-  ││ tect    ││ tect   ││Architect││ tect    │
+│tect  ││ tect    ││         ││        ││         ││         │
+└──┬───┘└──┬──────┘└──┬──────┘└──┬─────┘└──┬──────┘└──┬──────┘
+   │       │          │          │          │          │
+   │       └──────────┴──────────┴──────────┴──────────┘
+   │                  │
+   │       ┌──────────▼──────────┐
+   │       │   PROMPT MEMORY     │
+   │       │ • Templates         │
+   │       │ • Effectiveness     │
+   │       │ • A/B Testing       │
+   │       └─────────────────────┘
+   │
+   └──────────────────┬───────────────────────────────────────────
+                      │
+┌─────────────────────▼──────────────────────────────────────────┐
+│                COGNITIVE ARCHITECTURE                           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
+│  │   Memory     │  │  Reasoning   │  │   Learning   │         │
+│  │   Systems    │  │   Systems    │  │   Systems    │         │
+│  │              │  │              │  │              │         │
+│  │ • Working    │  │ • Reactive   │  │ • Experience │         │
+│  │ • Episodic   │  │ • Deliberate │  │   Replay     │         │
+│  │ • Semantic   │  │ • Reflective │  │ • Meta-Learn │         │
+│  │ • Procedural │  │ • ReAct      │  │ • Curriculum │         │
+│  └──────────────┘  └──────────────┘  └──────────────┘         │
+└─────────────────────┬──────────────────────────────────────────┘
+                      │
+┌─────────────────────▼──────────────────────────────────────────┐
+│                KNOWLEDGE LAYER                                  │
+│  ┌────────────────────────┐  ┌────────────────────────┐       │
+│  │    Graph RAG (Neo4j)   │  │  Vector Store (Chroma) │       │
+│  │                        │  │                        │       │
+│  │ • Agent architectures  │  │ • Semantic search      │       │
+│  │ • Tool relationships   │  │ • Documentation        │       │
+│  │ • State flows          │  │ • Error solutions      │       │
+│  │ • Dependencies         │  │ • Code examples        │       │
+│  │ • Prompt lineage       │  │ • Prompt templates     │       │
+│  └────────────────────────┘  └────────────────────────┘       │
+└─────────────────────┬──────────────────────────────────────────┘
+                      │
+┌─────────────────────▼──────────────────────────────────────────┐
+│                    TOOL LAYER                                   │
+│    File Ops | Git | Terminal | Language Servers | MCP          │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### 2.2 Data Flow Example: Building a Multi-Agent System
@@ -401,21 +412,23 @@ Our unique approach combines cognitive architecture with agent-specific knowledg
 
 ## 3. Multi-Agent Architect System
 
-### 3.0 System Overview: Six Specialized Architects
+### 3.0 System Overview: Seven Specialized Architects
 
-**Core Philosophy:** The Agent AI Architect employs a **modular team of six specialized architect agents**, each with distinct expertise mapping directly to the agent development lifecycle—from analysis through implementation to quality assurance.
+**Core Philosophy:** The Agent AI Architect employs a **modular team of seven specialized architect agents**, each with distinct expertise mapping directly to the agent development lifecycle—from analysis through prompt optimization to implementation and quality assurance.
 
-**Why Six Architects?**
-- ✅ **Cognitive Diversity**: Mirrors real-world engineering teams (analysis → planning → coding → testing → review)
+**Why Seven Architects?**
+- ✅ **Cognitive Diversity**: Mirrors real-world engineering teams (analysis → prompt optimization → planning → coding → testing → review)
 - ✅ **HiRAG Optimization**: Each architect queries the appropriate RAG tier (Global/Bridge/Local)
 - ✅ **Compound Learning**: Each domain learns independently, making future builds progressively better
 - ✅ **Modularity**: Failures are localized; improvements are targeted
 - ✅ **Scalability**: Additional specialist architects can be added as needed
+- ✅ **Prompt Excellence**: Dedicated prompt engineering ensures every architect works with optimized instructions
 
 | Architect | Primary Role | HiRAG Tier Focus | Output |
 |-----------|-------------|------------------|---------|
 | **Orchestrator Architect** | Master coordinator, workflow management | All tiers | Task routing, progress tracking |
 | **Analyzer Architect** | Pattern recognition, requirements analysis | GLOBAL + BRIDGE | Architectural insights, similar agents |
+| **Prompt Engineer Architect** | Prompt optimization, meta-cognitive strategist | LOCAL + BRIDGE | Optimized prompts, effectiveness metrics |
 | **Planning Architect** | System design, architectural blueprints | BRIDGE | Detailed implementation plan |
 | **Coding Architect** | Implementation, code generation | LOCAL | Working agent code |
 | **Testing Architect** | Validation, debugging, quality checks | LOCAL | Test results, bug fixes |
