@@ -1,0 +1,118 @@
+# Personal AI Architect Configuration
+# Automatically adapts to Faheem's preferences and patterns
+# No manual role specification needed - system learns automatically
+
+version: "3.1-personal"
+user_profile:
+  name: "Faheem"
+  system_type: "personal_advantage"
+  auto_adapt: true
+  
+# Automatic Configuration Rules
+adaptive_intelligence:
+  learning_enabled: true
+  behavior_tracking: true
+  preference_optimization: true
+  
+  # Automatic expertise detection indicators
+  expertise_indicators:
+    framework_knowledge:
+      - "langraph"
+      - "crewai" 
+      - "autogen"
+      - "llamaindex"
+      
+    technical_sophistication:
+      - "architecture"
+      - "patterns" 
+      - "optimization"
+      - "performance"
+      
+    efficiency_focus:
+      - "quick"
+      - "direct"
+      - "efficient"
+      - "streamlined"
+
+# Dynamic Module Selection Rules  
+module_selection:
+  auto_mode: true  # No manual role specification needed
+  
+  # Complexity-based loading
+  simple_projects:
+    context_budget: 4000
+    modules: ["core", "basic_tools"]
+    communication: "direct"
+    
+  moderate_projects: 
+    context_budget: 8000
+    modules: ["core", "standard_tools", "integrations"]
+    communication: "focused"
+    
+  complex_projects:
+    context_budget: 12000  
+    modules: ["core", "advanced_tools", "integrations", "optimizations"]
+    communication: "comprehensive"
+    
+  cutting_edge_projects:
+    context_budget: 16000
+    modules: ["all_modules", "experimental", "research_patterns"]
+    communication: "collaborative"
+
+# Personal Productivity Optimizations
+productivity_features:
+  # Skip redundant explanations for familiar patterns
+  smart_skipping: true
+  
+  # Preload commonly used modules based on history
+  predictive_loading: true
+  
+  # Optimize for your typical working hours
+  time_aware_optimization: true
+  
+  # Remember successful approaches and suggest them
+  pattern_suggestions: true
+
+# Learning Persistence
+learning_storage:
+  behavior_file: "data/user_behavior.pkl"
+  session_logs: "data/session_history/"
+  success_patterns: "data/success_patterns.yaml"
+  
+# Integration with existing module system  
+module_integration:
+  orchestrator_config: "System Prompts/01-Orchestrator-Architect/config/"
+  analyzer_config: "System Prompts/02-Analyzer-Architect/config/"
+  planner_config: "System Prompts/04-Planning-Architect/config/"
+  coder_config: "System Prompts/05-Coding-Architect/config/"
+  
+# Automatic adaptation rules
+adaptation_rules:
+  # If user mentions urgency, optimize for speed
+  urgency_detection:
+    keywords: ["urgent", "quickly", "asap", "fast"]
+    response: "streamlined_mode"
+    
+  # If user shows expertise, reduce explanations  
+  expertise_detection:
+    indicators: ["I know", "familiar with", "already understand"]
+    response: "expert_mode"
+    
+  # If user exploring, provide more context
+  exploration_detection:
+    keywords: ["explore", "learn", "understand", "research"]  
+    response: "educational_mode"
+
+# Personal advantage features
+competitive_advantages:
+  # Faster agent building through learned patterns
+  rapid_prototyping: true
+  
+  # Optimized module combinations from your success history
+  success_optimization: true
+  
+  # Predictive suggestions based on project context
+  intelligent_suggestions: true
+  
+  # Seamless scaling from prototype to production
+  scaling_automation: true

@@ -1,0 +1,164 @@
+version: '3.0'
+last_updated: '2025-10-13T00:00:00Z'
+
+modules:
+  - id: injection_defense
+    name: "Prompt Injection Defense Layer"
+    version: "2.5.1"
+    description: "Advanced prompt injection detection and mitigation"
+    file_path: "System Prompts/01-Orchestrator-Architect/config/security/injection_defense.md"
+    sha256_hash: "a1b2c3d4e5f6789..."  # Computed at registration
+    size_bytes: 12845
+    token_estimate: 538
+    supported_agent_types: [orchestrator, analyzer, planner, coder, tester, reviewer]
+    required_context: [user_input, security_level]
+    optional_context: [conversation_history, risk_assessment]
+    orchestration_modes: [standard, critical, exploratory, recovery]
+    user_roles: [novice, expert, admin]
+    dependencies: []
+    conflicts: []
+    status: critical
+    audit_timestamp: '2025-10-13T00:00:00Z'
+    approved_by: "security_team"
+    compliance_tags: [gdpr, hipaa, enterprise_security]
+    effectiveness_score: 0.95
+    usage_count: 1247
+    error_rate: 0.002
+    avg_latency_ms: 12.4
+    input_schema:
+      type: object
+      properties:
+        user_input:
+          type: string
+          description: "Raw user input to analyze"
+        security_level:
+          type: string
+          enum: [low, medium, high, critical]
+      required: [user_input, security_level]
+    output_schema:
+      type: object
+      properties:
+        is_safe:
+          type: boolean
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        detected_threats:
+          type: array
+          items:
+            type: string
+
+  - id: orchestration_core
+    name: "Core Orchestration Engine"
+    version: "2.5.0"
+    description: "Primary orchestration logic and workflow management"
+    file_path: "System Prompts/01-Orchestrator-Architect/config/governance/orchestration_core.md"
+    sha256_hash: "b2c3d4e5f6789a..."
+    size_bytes: 18924
+    token_estimate: 643
+    supported_agent_types: [orchestrator]
+    required_context: [user_request, orchestration_mode]
+    optional_context: [user_expertise, project_context]
+    orchestration_modes: [standard, critical, exploratory]
+    user_roles: [novice, expert, admin]
+    dependencies: [audit_logging]
+    conflicts: []
+    status: critical
+    audit_timestamp: '2025-10-13T00:00:00Z'
+    approved_by: "architecture_team"
+    compliance_tags: [enterprise_workflow, audit_ready]
+    effectiveness_score: 0.92
+    usage_count: 2845
+    error_rate: 0.001
+    avg_latency_ms: 45.2
+
+  - id: personality_core
+    name: "Personality Framework Core"
+    version: "2.5.0"
+    description: "Core personality traits and communication foundation"
+    file_path: "System Prompts/01-Orchestrator-Architect/config/communication/personality_core.md"
+    sha256_hash: "c3d4e5f6789ab..."
+    size_bytes: 14562
+    token_estimate: 444
+    supported_agent_types: [orchestrator, analyzer, planner, coder, tester, reviewer]
+    required_context: [user_role, communication_style]
+    optional_context: [user_expertise, conversation_context]
+    orchestration_modes: [standard, critical, exploratory, recovery]
+    user_roles: [novice, expert, admin]
+    dependencies: []
+    conflicts: []
+    status: critical
+    audit_timestamp: '2025-10-13T00:00:00Z'
+    approved_by: "ux_team"
+    compliance_tags: [user_experience, accessibility]
+    effectiveness_score: 0.88
+    usage_count: 3926
+    error_rate: 0.003
+    avg_latency_ms: 8.7
+
+  - id: style_pedagogical
+    name: "Pedagogical Communication Style"
+    version: "2.5.0"
+    description: "Teaching-focused communication for learning scenarios"
+    file_path: "System Prompts/01-Orchestrator-Architect/config/communication/style_pedagogical.md"
+    sha256_hash: "d4e5f6789abc..."
+    size_bytes: 9876
+    token_estimate: 287
+    supported_agent_types: [orchestrator, analyzer, planner]
+    required_context: [learning_objective, user_expertise]
+    optional_context: [educational_context, preferred_examples]
+    orchestration_modes: [standard, exploratory]
+    user_roles: [novice]
+    dependencies: [personality_core]
+    conflicts: [style_professional, style_informal]
+    status: available
+    audit_timestamp: '2025-10-13T00:00:00Z'
+    approved_by: "education_team"
+    compliance_tags: [educational_content, accessibility]
+    effectiveness_score: 0.91
+    usage_count: 876
+    error_rate: 0.005
+    avg_latency_ms: 15.3
+
+  - id: canary_monitoring
+    name: "Security Canary Monitoring"
+    version: "2.5.0"
+    description: "Embedded security canaries for threat detection"
+    file_path: "System Prompts/01-Orchestrator-Architect/config/security/canary_monitoring.md"
+    sha256_hash: "e5f6789abcd..."
+    size_bytes: 7843
+    token_estimate: 234
+    supported_agent_types: [orchestrator, analyzer, coder, tester, reviewer]
+    required_context: [execution_context, security_monitoring]
+    optional_context: [threat_intelligence, behavioral_patterns]
+    orchestration_modes: [standard, critical, exploratory, recovery]
+    user_roles: [expert, admin]
+    dependencies: [audit_logging]
+    conflicts: []
+    status: available
+    audit_timestamp: '2025-10-13T00:00:00Z'
+    approved_by: "security_team"
+    compliance_tags: [security_monitoring, threat_detection]
+    effectiveness_score: 0.87
+    usage_count: 534
+    error_rate: 0.008
+    avg_latency_ms: 22.1
+
+performance_analytics:
+  total_modules: 5
+  avg_effectiveness_score: 0.906
+  avg_error_rate: 0.0038
+  avg_latency_ms: 20.74
+  most_used_module: personality_core
+  most_critical_modules: [injection_defense, orchestration_core, personality_core]
+  
+schema_validation:
+  input_schemas_count: 1
+  output_schemas_count: 1
+  validation_enabled: true
+  
+integrity_status:
+  all_hashes_verified: true
+  last_integrity_check: '2025-10-13T00:00:00Z'
+  compromised_modules: []

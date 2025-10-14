@@ -1,0 +1,98 @@
+# Orchestrator Architect Tools Configuration
+# Version: 2.5
+# Date: October 13, 2025
+# Purpose: Define specific tools available to the Orchestrator
+
+orchestrator_tools:
+  # Core Coordination Tools
+  workflow_management:
+    - route_to_architect: "Route tasks to specialist architects with context"
+    - consensus_manager: "Manage multi-architect consensus for ambiguous decisions"
+    - escalation_handler: "Handle escalation workflows and human-in-the-loop"
+    - progress_tracker: "Track progress across all architects"
+    
+  # Memory & Knowledge Tools  
+  memory_access:
+    - episodic_query: "Query past build experiences and outcomes"
+    - semantic_search: "Search knowledge base for patterns and solutions"
+    - pattern_matcher: "Match user requests to known successful patterns"
+    - hirag_query: "Query hierarchical RAG for global, bridge, and local knowledge"
+    
+  # Analysis & Planning Tools
+  decision_support:
+    - confidence_calculator: "Calculate confidence scores for decisions"
+    - risk_assessor: "Assess risk levels for different approaches"
+    - complexity_analyzer: "Analyze project complexity and requirements"
+    - framework_recommender: "Recommend optimal frameworks based on requirements"
+    
+  # Communication Tools
+  user_interaction:
+    - approval_gate: "Present decisions for user approval with clear explanations"
+    - progress_reporter: "Report progress with visual indicators and confidence scores"
+    - context_explainer: "Explain reasoning and context for transparency"
+    - feedback_collector: "Collect user feedback on decisions and outcomes"
+    
+  # Quality Assurance Tools
+  validation:
+    - security_validator: "Validate security constraints and policies"
+    - consistency_checker: "Check consistency across architect decisions"
+    - quality_scorer: "Score quality of architectural decisions"
+    - compliance_auditor: "Ensure compliance with governance policies"
+    
+  # Orchestration Mode Tools
+  adaptive_control:
+    - mode_selector: "Select appropriate orchestration mode (EXPLORATORY/STANDARD/CRITICAL/RECOVERY)"
+    - context_budget_manager: "Manage context token budget based on complexity"
+    - approval_frequency_controller: "Adjust approval frequency based on user expertise"
+    - communication_style_adapter: "Adapt communication style to user preference"
+
+# Tool Integration Points
+tool_integrations:
+  file_operations:
+    - read_file: "Read configuration and template files"
+    - write_file: "Write orchestration logs and audit trails"
+    - search_files: "Search for relevant patterns and templates"
+    
+  code_analysis:
+    - analyze_structure: "Analyze code structure for pattern recognition" 
+    - quality_metrics: "Calculate code quality metrics"
+    - dependency_analyzer: "Analyze dependencies and integrations"
+    
+  git_operations:
+    - commit_tracker: "Track progress through git commits"
+    - branch_manager: "Manage feature branches for different architects"
+    - change_analyzer: "Analyze changes for impact assessment"
+    
+  web_tools:
+    - documentation_fetcher: "Fetch latest framework documentation"
+    - pattern_searcher: "Search web for similar architectural patterns"
+    - benchmark_collector: "Collect performance benchmarks"
+
+# Security-Constrained Tools
+security_constraints:
+  - no_code_execution: "Orchestrator cannot execute code directly"
+  - no_file_deletion: "Cannot delete files without explicit approval" 
+  - no_external_writes: "Cannot write to external systems"
+  - audit_all_actions: "All tool usage must be logged for audit"
+
+# Tool Usage Patterns by Mode
+usage_patterns:
+  EXPLORATORY_mode:
+    - Heavy use of memory_access tools for pattern discovery
+    - Frequent consensus_manager for ambiguous decisions
+    - Maximum context_budget_manager allocation
+    
+  STANDARD_mode:
+    - Balanced tool usage focusing on efficiency
+    - Moderate approval_gate frequency
+    - Standard pattern_matcher usage
+    
+  CRITICAL_mode:
+    - Extensive security_validator usage
+    - Maximum compliance_auditor checking
+    - Frequent escalation_handler for risk mitigation
+    
+  RECOVERY_mode:
+    - Heavy episodic_query for failure analysis
+    - Extensive risk_assessor for problem diagnosis
+    - Frequent progress_tracker for recovery monitoring

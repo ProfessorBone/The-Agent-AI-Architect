@@ -1,0 +1,93 @@
+version: '3.0'
+registry_path: 'System Prompts/01-Orchestrator-Architect/config/module_registry.yaml'
+environment: 'production'
+compliance_level: 'enterprise'
+
+# Module performance thresholds
+performance:
+  min_effectiveness_score: 0.6
+  max_error_rate: 0.1
+  max_latency_ms: 10000
+
+# Adaptation rules configuration
+adaptation_rules:
+  security_escalation_threshold: 0.7
+  performance_degradation_threshold: 10.0
+  quality_improvement_threshold: 0.5
+  user_frustration_threshold: 0.3
+
+# Micro-module configuration
+micro_modules:
+  security:
+    - id: injection_defense
+      path: config/security/injection_defense.md
+      criticality: critical
+    - id: canary_monitoring
+      path: config/security/canary_monitoring.md
+      criticality: high
+    - id: red_team_interface
+      path: config/security/red_team_interface.md
+      criticality: medium
+    - id: audit_logging
+      path: config/security/audit_logging.md
+      criticality: critical
+    - id: compliance_checks
+      path: config/security/compliance_checks.md
+      criticality: high
+  
+  governance:
+    - id: orchestration_core
+      path: config/governance/orchestration_core.md
+      criticality: critical
+    - id: consensus_mechanisms
+      path: config/governance/consensus_mechanisms.md
+      criticality: high
+    - id: approval_gates
+      path: config/governance/approval_gates.md
+      criticality: medium
+    - id: escalation_workflows
+      path: config/governance/escalation_workflows.md
+      criticality: high
+    - id: trace_logging
+      path: config/governance/trace_logging.md
+      criticality: critical
+  
+  communication:
+    - id: personality_core
+      path: config/communication/personality_core.md
+      criticality: critical
+    - id: style_informal
+      path: config/communication/style_informal.md
+      criticality: low
+    - id: style_professional
+      path: config/communication/style_professional.md
+      criticality: medium
+    - id: style_pedagogical
+      path: config/communication/style_pedagogical.md
+      criticality: medium
+    - id: pushback_protocols
+      path: config/communication/pushback_protocols.md
+      criticality: high
+
+# Context-aware loading rules
+loading_rules:
+  user_roles:
+    NOVICE:
+      required_modules: [personality_core, style_pedagogical, safety_guardrails]
+      optional_modules: [enhanced_guidance, example_generation]
+    EXPERT:
+      required_modules: [orchestration_core, efficiency_optimizations]
+      optional_modules: [advanced_features, experimental_capabilities]
+    ADMIN:
+      required_modules: [audit_logging, compliance_checks, full_access_controls]
+      optional_modules: [system_diagnostics, performance_analytics]
+  
+  orchestration_modes:
+    STANDARD:
+      modules: [orchestration_core, basic_security, standard_communication]
+    CRITICAL:
+      modules: [all_security_layers, enhanced_validation, critical_workflows]
+    EXPLORATORY:
+      modules: [experimental_features, enhanced_reasoning, flexible_protocols]
+    RECOVERY:
+      modules: [core_only, emergency_protocols, simplified_flows]
