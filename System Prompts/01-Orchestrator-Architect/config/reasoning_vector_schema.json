@@ -613,6 +613,120 @@
       "validation_required": true,
       "schema_validation": true
     },
+    "hierarchical_memory_system": {
+      "description": "Advanced memory architecture for coordination learning",
+      "working_memory": {
+        "type": "object",
+        "description": "Current coordination context and active workflow state",
+        "properties": {
+          "active_coordination_plan": {
+            "type": "object",
+            "description": "Current workflow coordination strategy"
+          },
+          "architect_states": {
+            "type": "object",
+            "description": "Real-time status of all architects in workflow"
+          },
+          "user_interaction_context": {
+            "type": "object",
+            "description": "Current user session context and preferences"
+          },
+          "decision_buffer": {
+            "type": "array",
+            "description": "Recent coordination decisions pending evaluation"
+          }
+        }
+      },
+      "episodic_memory": {
+        "type": "object",
+        "description": "Historical coordination episodes for pattern learning",
+        "properties": {
+          "successful_workflows": {
+            "type": "array",
+            "description": "Archive of successful coordination patterns",
+            "items": {
+              "type": "object",
+              "properties": {
+                "task_context": {"type": "object"},
+                "coordination_strategy": {"type": "object"},
+                "outcome_metrics": {"type": "object"},
+                "success_factors": {"type": "array"},
+                "timestamp": {"$ref": "#/definitions/timestamp"}
+              }
+            }
+          },
+          "failed_workflows": {
+            "type": "array",
+            "description": "Archive of failed coordination attempts for learning",
+            "items": {
+              "type": "object",
+              "properties": {
+                "task_context": {"type": "object"},
+                "attempted_strategy": {"type": "object"},
+                "failure_points": {"type": "array"},
+                "lessons_learned": {"type": "array"},
+                "timestamp": {"$ref": "#/definitions/timestamp"}
+              }
+            }
+          },
+          "user_preference_episodes": {
+            "type": "array",
+            "description": "Historical user interaction patterns and preferences"
+          }
+        }
+      },
+      "procedural_memory": {
+        "type": "object",
+        "description": "Learned coordination procedures and optimization patterns",
+        "properties": {
+          "coordination_templates": {
+            "type": "object",
+            "description": "Proven coordination patterns by task type",
+            "properties": {
+              "simple_agent_builds": {"type": "object"},
+              "multi_agent_systems": {"type": "object"},
+              "enterprise_deployments": {"type": "object"},
+              "research_agents": {"type": "object"}
+            }
+          },
+          "optimization_rules": {
+            "type": "array",
+            "description": "Learned rules for coordination optimization",
+            "items": {
+              "type": "object",
+              "properties": {
+                "condition": {"type": "string"},
+                "optimization": {"type": "string"},
+                "confidence": {"$ref": "#/definitions/confidence_score"},
+                "validation_count": {"type": "integer"}
+              }
+            }
+          },
+          "architect_synergy_patterns": {
+            "type": "object",
+            "description": "Learned patterns of effective architect collaboration"
+          }
+        }
+      },
+      "memory_operations": {
+        "description": "Memory system operations for learning and recall",
+        "adaptive_recall": {
+          "description": "Context-aware memory retrieval for coordination decisions",
+          "similarity_threshold": 0.75,
+          "max_retrieved_episodes": 5
+        },
+        "memory_consolidation": {
+          "description": "Process for converting working memory to long-term storage",
+          "consolidation_triggers": ["workflow_completion", "significant_learning"],
+          "retention_policy": "High-value patterns retained indefinitely"
+        },
+        "pattern_extraction": {
+          "description": "Automatic extraction of coordination patterns from episodes",
+          "pattern_confidence_threshold": 0.80,
+          "minimum_pattern_instances": 3
+        }
+      }
+    },
     "data_persistence": {
       "storage_format": "JSON",
       "compression": "gzip",
