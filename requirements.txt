@@ -1,0 +1,80 @@
+# Core Agent Framework Dependencies
+# Basic Agent Libraries
+langchain>=0.1.0
+langchain-community>=0.0.10
+langchain-core>=0.1.0
+langchain-openai>=0.0.5
+langgraph>=0.0.20
+crewai>=0.1.0
+
+# LLM Providers
+openai>=1.0.0
+anthropic>=0.8.0
+
+# Vector Databases & Embeddings
+chromadb>=0.4.0
+faiss-cpu>=1.7.0
+sentence-transformers>=2.2.0
+
+# Research & Web Tools
+tavily-python>=0.3.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+selenium>=4.15.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# File Processing
+python-docx>=0.8.11
+pypdf2>=3.0.0
+openpyxl>=3.1.0
+
+# Development & Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.5.0
+
+# Monitoring & Observability
+langsmith>=0.0.50
+wandb>=0.15.0
+
+# Configuration & Environment
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+
+# Async & Concurrency
+asyncio>=3.4.3
+aiohttp>=3.8.0
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+
+# API Framework (if building APIs)
+fastapi>=0.100.0
+uvicorn>=0.23.0
+
+# Jupyter & Analysis
+jupyter>=1.0.0
+ipykernel>=6.25.0
+notebook>=7.0.0
+
+# Memory & Caching
+redis>=5.0.0
+memcached>=1.6.0
+
+# Advanced AI Tools (2025 Stack)
+# Note: Some packages may not exist yet - remove if installation fails
+# promptlayer>=0.5.0
+# agenta>=0.10.0
+# reasoning-bank>=1.0.0
+# memgpt>=0.3.0
+# microsoft-agent-framework-2025>=1.0.0
+# promptperfect>=1.0.0
