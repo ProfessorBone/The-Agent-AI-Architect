@@ -1,0 +1,546 @@
+# Planning Architect Tools Ecosystem - 38 Tools
+
+module_type: OPTIONAL
+context_aware_loading: true
+version: 3.0
+last_updated: 2025-10-16
+total_tools: 38
+
+overview:
+  description: "Comprehensive ecosystem of 38 cutting-edge 2025 tools organized into 6 specialized categories"
+  usage: "Use intelligent tool selection based on task requirements and architectural context"
+  categories: 6
+  selection_strategy: "Context-aware based on framework, environment, complexity, and deployment"
+
+# ======================================
+# Category 1: Blueprint Management & Versioning (8 Tools)
+# ======================================
+
+category_1_blueprint_management:
+  name: "Blueprint Management & Versioning"
+  total_tools: 8
+  primary_use_cases: "Version control, lifecycle management, governance"
+
+  critical_p0:
+    git_based_registry:
+      priority: P0
+      purpose: "Version control for architectural blueprints"
+      use_when: "All blueprint creation and modification"
+      integration: "Store blueprints as markdown/YAML in Git repositories"
+      best_practice: "One blueprint per file, semantic versioning, PR reviews for changes"
+
+    langsmith:
+      priority: P0
+      purpose: "Blueprint tracing, debugging, and evaluation for LangChain/LangGraph"
+      use_when: "Designing LangGraph StateGraph architectures, debugging multi-agent flows"
+      integration: "Annotate blueprints with LangSmith trace IDs for implementation tracking"
+      best_practice: "Include trace configuration in blueprint metadata"
+
+  high_priority_p1:
+    maxim_ai:
+      priority: P1
+      purpose: "Enterprise blueprint versioning with collaborative editing and rollbacks"
+      use_when: "Team-based architectural design, enterprise deployments"
+      integration: "Export blueprints to Maxim AI registry for team collaboration"
+      best_practice: "Use for mission-critical systems requiring audit trails"
+
+    promptops:
+      priority: P1
+      purpose: "Blueprint lifecycle management with CI/CD automation"
+      use_when: "Automated blueprint deployment pipelines required"
+      integration: "Blueprint-as-code workflows with automated validation"
+      best_practice: "Integrate blueprint validation into deployment pipeline"
+
+  supporting_p2_p3:
+    openprompt:
+      priority: P2
+      purpose: "Centralized blueprint repository and sharing platform"
+      use_when: "Maintaining organizational pattern library"
+      integration: "Share reusable architectural patterns across teams"
+      best_practice: "Tag blueprints by pattern type, framework, complexity"
+
+    validation_engine:
+      priority: P2
+      purpose: "Automated blueprint completeness and correctness checks"
+      use_when: "Pre-implementation validation required"
+      integration: "Integrate with AutomatedEvaluationEngine"
+      best_practice: "Run validation before handoff to Coder"
+
+    adr_tools:
+      priority: P2
+      purpose: "Document architectural decisions and rationale"
+      use_when: "Complex architectural decisions require documentation"
+      integration: "Embed ADRs in blueprint metadata"
+      best_practice: "Link decisions to specific blueprint components"
+
+    template_library:
+      priority: P3
+      purpose: "Reusable pattern templates (ReAct, Supervisor, Hierarchical)"
+      use_when: "Starting new blueprint from proven patterns"
+      integration: "Query HierarchicalMemorySystem for successful patterns"
+      best_practice: "Maintain success metrics for each template"
+
+# ======================================
+# Category 2: State Schema & Data Modeling (7 Tools)
+# ======================================
+
+category_2_state_schema:
+  name: "State Schema & Data Modeling"
+  total_tools: 7
+  primary_use_cases: "Data modeling, type safety, validation"
+
+  critical_p0:
+    pydantic:
+      priority: P0
+      purpose: "Python data validation and type enforcement"
+      use_when: "ALL Python-based state schema designs"
+      integration: "Generate Pydantic models in state schema sections"
+      code_example: |
+        from pydantic import BaseModel, Field
+        from typing import List, Union
+
+        class AgentState(BaseModel):
+            input: str = Field(..., description="User input/query")
+            agent_outcome: Union[AgentAction, AgentFinish]
+            intermediate_steps: List[tuple] = Field(default_factory=list)
+
+            class Config:
+                arbitrary_types_allowed = True
+
+    typeddict:
+      priority: P0
+      purpose: "Type hints for LangGraph state dictionaries"
+      use_when: "LangGraph StateGraph state definitions"
+      integration: "Primary choice for LangGraph state schemas"
+      code_example: |
+        from typing import TypedDict, List, Union
+
+        class AgentState(TypedDict):
+            input: str
+            agent_outcome: Union[AgentAction, AgentFinish]
+            intermediate_steps: List[tuple]
+
+  high_priority_p1:
+    dbschema:
+      priority: P1
+      purpose: "Visual database and state schema design"
+      use_when: "Complex state structures requiring visualization"
+      integration: "Generate schema diagrams for documentation"
+      best_practice: "Use for enterprise systems with complex state"
+
+    json_schema:
+      priority: P1
+      purpose: "JSON-based schema validation"
+      use_when: "API contracts, cross-language state sharing"
+      integration: "Generate JSON schemas for REST API blueprints"
+      best_practice: "Include schema validation in blueprint testing section"
+
+  supporting_p2_p3:
+    dataclasses:
+      priority: P2
+      purpose: "Simplified data structures with automatic methods"
+      use_when: "Simple state schemas without complex validation"
+      integration: "Alternative to Pydantic for lightweight cases"
+      best_practice: "Use for internal components, Pydantic for boundaries"
+
+    migration_tools:
+      priority: P2
+      purpose: "Manage schema evolution and backward compatibility"
+      use_when: "Evolving existing agent systems"
+      integration: "Include migration strategy in blueprint"
+      best_practice: "Version state schemas, document breaking changes"
+
+    graph_schema:
+      priority: P3
+      purpose: "Model complex agent relationships as graphs (Neo4j/ArangoDB)"
+      use_when: "Multi-agent systems with complex interdependencies"
+      integration: "Use for hierarchical or mesh agent architectures"
+      best_practice: "Model agent relationships, message flows as graphs"
+
+# ======================================
+# Category 3: Multi-Agent Orchestration (9 Tools)
+# ======================================
+
+category_3_orchestration:
+  name: "Multi-Agent Orchestration"
+  total_tools: 9
+  primary_use_cases: "Framework integration, multi-agent coordination"
+
+  critical_p0:
+    langgraph:
+      priority: P0
+      purpose: "State machine-based agent workflow orchestration"
+      use_when: "ReAct, Supervisor-Worker, Hierarchical patterns"
+      integration: "PRIMARY framework for blueprint implementation"
+      key_features: "StateGraph, conditional routing, checkpointing, human-in-loop"
+      best_practice: "Use for all LangChain-based agent systems"
+
+  high_priority_p1:
+    crewai:
+      priority: P1
+      purpose: "Team-based multi-agent coordination"
+      use_when: "Task-oriented multi-agent systems with clear roles"
+      integration: "Agent + Task + Crew configuration blueprints"
+      key_features: "Sequential/hierarchical processes, memory, context sharing"
+      best_practice: "Use when agents have distinct roles (researcher, writer, analyst)"
+
+    langchain:
+      priority: P1
+      purpose: "Foundation framework for LLM applications"
+      use_when: "Building components for LangGraph or standalone chains"
+      integration: "Component library for tools, memory, retrievers"
+      key_features: "Chains, agents, tools, memory, callbacks"
+      best_practice: "Use as foundation, LangGraph for orchestration"
+
+    autogen:
+      priority: P1
+      purpose: "Conversational multi-agent framework (Microsoft)"
+      use_when: "Dialogue-based agent interactions, code generation"
+      integration: "Conversational agent blueprints"
+      key_features: "Group chat, function calling, code execution"
+      best_practice: "Use for conversational workflows, pair programming agents"
+
+  medium_priority_p2:
+    dspy:
+      priority: P2
+      purpose: "Declarative self-improving language programs"
+      use_when: "Agents requiring automatic optimization"
+      integration: "Include DSPy signatures in blueprint"
+      key_features: "Modular prompt programming, automatic optimization"
+      best_practice: "Use for performance-critical agent behaviors"
+
+    openai_agent_builder:
+      priority: P2
+      purpose: "Enterprise-grade agent creation platform"
+      use_when: "OpenAI-specific deployments, enterprise requirements"
+      integration: "Blueprint export to OpenAI Agent Builder format"
+      key_features: "Visual construction, runtime monitoring, integrations"
+      best_practice: "Use for production OpenAI deployments"
+
+    azure_agent_factory:
+      priority: P2
+      purpose: "Secure Azure-based agent deployment"
+      use_when: "Azure cloud deployments, enterprise security required"
+      integration: "Azure-specific blueprint configurations"
+      key_features: "Security automation, multi-tenant, compliance"
+      best_practice: "Use for regulated industries, enterprise Azure"
+
+  supporting_p3:
+    semantic_kernel:
+      priority: P3
+      purpose: "AI orchestration for .NET/Java applications (Microsoft)"
+      use_when: "Enterprise .NET or Java environments"
+      integration: "Cross-platform blueprint specifications"
+      best_practice: "Use for Microsoft-centric enterprise stacks"
+
+    agent_protocol:
+      priority: P3
+      purpose: "Standardized agent communication protocol (Open Standard)"
+      use_when: "Multi-framework or interoperable agent systems"
+      integration: "Standard API contracts in blueprints"
+      best_practice: "Use for framework-agnostic designs"
+
+# ======================================
+# Category 4: Visual Planning & Collaboration (6 Tools)
+# ======================================
+
+category_4_visual:
+  name: "Visual Planning & Collaboration"
+  total_tools: 6
+  primary_use_cases: "Diagram generation, collaboration, visualization"
+
+  high_priority_p1:
+    mermaid:
+      priority: P1
+      purpose: "Text-based diagram generation (Git-friendly)"
+      use_when: "ALWAYS include in blueprint documentation"
+      integration: "Generate flowcharts, state diagrams, sequence diagrams"
+      code_example: |
+        ```mermaid
+        graph TB
+            A[User Input] --> B[Agent Node]
+            B --> C{Should Continue?}
+            C -->|Continue| D[Tool Node]
+            C -->|End| E[Final Output]
+            D --> B
+        ```
+      best_practice: "Include Mermaid diagrams in all blueprints"
+
+    plantuml:
+      priority: P1
+      purpose: "Comprehensive UML diagram generation"
+      use_when: "Complex component diagrams, architecture diagrams"
+      integration: "Component relationships, deployment diagrams"
+      best_practice: "Use for enterprise documentation requirements"
+
+  medium_priority_p2:
+    flowise:
+      priority: P2
+      purpose: "Visual workflow builder with drag-and-drop"
+      use_when: "Stakeholder collaboration, rapid prototyping"
+      integration: "Export Flowise designs to implementation blueprints"
+      best_practice: "Use for non-technical stakeholder engagement"
+
+    promptflow:
+      priority: P2
+      purpose: "Visual prompt and agent orchestration (Microsoft)"
+      use_when: "Azure deployments, visual design preferred"
+      integration: "Azure-native blueprint visualization"
+      best_practice: "Use with Azure Agent Factory for complete Azure solution"
+
+    pega_genai:
+      priority: P2
+      purpose: "Low-code AI workflow planning"
+      use_when: "Enterprise business process automation"
+      integration: "Bridge technical blueprints to business workflows"
+      best_practice: "Use for business-IT collaboration"
+
+    lucidchart:
+      priority: P2
+      purpose: "Collaborative diagramming platforms (Lucidchart / Draw.io)"
+      use_when: "Team design sessions, architecture reviews"
+      integration: "Export for presentation and documentation"
+      best_practice: "Use for synchronous collaboration sessions"
+
+# ======================================
+# Category 5: Testing & Quality Assurance (5 Tools)
+# ======================================
+
+category_5_testing:
+  name: "Testing & Quality Assurance"
+  total_tools: 5
+  primary_use_cases: "Testing, validation, quality gates"
+
+  high_priority_p1:
+    langsmith_testing:
+      priority: P1
+      purpose: "Comprehensive LangChain/LangGraph testing framework"
+      use_when: "All LangGraph blueprint implementations"
+      integration: "Include test datasets and evaluation criteria in blueprint"
+      key_features: "Dataset-based testing, regression detection, benchmarking"
+      best_practice: "Define test cases in blueprint testing section"
+
+    pytest:
+      priority: P1
+      purpose: "Python testing framework with agent extensions"
+      use_when: "Unit and integration testing strategies"
+      integration: "Specify pytest test structure in blueprint"
+      test_strategy: |
+        # Blueprint should include test specifications:
+        def test_agent_node(state):
+            """Test agent decision-making logic"""
+            result = agent_node(state)
+            assert 'agent_outcome' in result
+            assert isinstance(result['agent_outcome'], (AgentAction, AgentFinish))
+
+        def test_state_schema_validation(state_data):
+            """Test state schema validation"""
+            state = AgentState(**state_data)  # Pydantic validation
+            assert state.input is not None
+
+    helicone:
+      priority: P1
+      purpose: "LLM observability and testing platform"
+      use_when: "Performance validation, cost monitoring"
+      integration: "Include Helicone tracing in blueprint"
+      best_practice: "Define performance targets in blueprint"
+
+  medium_priority_p2:
+    simulation_framework:
+      priority: P2
+      purpose: "Multi-agent scenario and stress testing"
+      use_when: "Complex multi-agent systems, scale testing"
+      integration: "Include simulation scenarios in blueprint"
+      best_practice: "Define edge cases and failure scenarios"
+
+    contract_testing:
+      priority: P2
+      purpose: "API and agent-to-agent contract validation (Pact)"
+      use_when: "Multi-agent systems with defined interfaces"
+      integration: "Specify contracts in communication protocol section"
+      best_practice: "Version contracts alongside state schemas"
+
+# ======================================
+# Category 6: Monitoring & Observability (3 Tools)
+# ======================================
+
+category_6_monitoring:
+  name: "Monitoring & Observability"
+  total_tools: 3
+  primary_use_cases: "Observability, performance, debugging"
+
+  high_priority_p1:
+    langsmith_monitoring:
+      priority: P1
+      purpose: "Production monitoring for LangChain applications"
+      use_when: "All production LangGraph deployments"
+      integration: "Include monitoring configuration in blueprint"
+      key_metrics: "Trace latency, token usage, success rate, error types"
+      best_practice: "Define alerting thresholds in blueprint"
+
+    opentelemetry:
+      priority: P1
+      purpose: "Vendor-neutral observability framework"
+      use_when: "Multi-vendor or cloud-agnostic monitoring"
+      integration: "Standard instrumentation specifications"
+      best_practice: "Use for framework-agnostic blueprints"
+
+  medium_priority_p2:
+    datadog_newrelic:
+      priority: P2
+      purpose: "Enterprise APM and infrastructure monitoring (Datadog / New Relic)"
+      use_when: "Enterprise production deployments"
+      integration: "Include custom metrics and dashboards"
+      best_practice: "Define SLA metrics in blueprint"
+
+# ======================================
+# Tool Selection Strategy
+# ======================================
+
+tool_selection_algorithm:
+  description: "Intelligent tool selection based on blueprint context"
+
+  selection_criteria:
+    framework_based:
+      langgraph:
+        orchestration: ["LangGraph", "LangChain"]
+        state_schema: ["TypedDict", "Pydantic"]
+        testing: ["LangSmith Testing", "Pytest"]
+        monitoring: ["LangSmith Monitoring"]
+
+      crewai:
+        orchestration: ["CrewAI"]
+        state_schema: ["Pydantic", "Dataclasses"]
+        testing: ["Pytest", "Contract Testing"]
+
+      autogen:
+        orchestration: ["AutoGen", "LangChain"]
+        state_schema: ["Pydantic"]
+        testing: ["Pytest"]
+
+    environment_based:
+      azure:
+        orchestration_add: ["Azure Agent Factory"]
+        visual_add: ["PromptFlow"]
+        monitoring_add: ["Azure Monitor"]
+
+      openai:
+        orchestration_add: ["OpenAI Agent Builder"]
+
+      aws:
+        monitoring_add: ["CloudWatch"]
+
+    complexity_based:
+      complex_enterprise:
+        visual: ["PlantUML", "Lucidchart", "Mermaid"]
+        blueprint_management: ["Maxim AI", "PromptOps", "Git Registry"]
+        testing: ["LangSmith Testing", "Pytest", "Simulation Framework"]
+
+      simple_medium:
+        visual: ["Mermaid"]
+        blueprint_management: ["Git Registry"]
+        testing: ["Pytest"]
+
+    always_include:
+      - "Mermaid"  # Always generate diagrams
+      - "Pytest"   # Always include testing
+      - "Git Registry"  # Always version
+
+  selection_pseudocode: |
+    def select_tools_for_blueprint(context):
+        selected_tools = initialize_empty_tool_dict()
+
+        # Framework determines orchestration tools
+        if context.framework == 'langgraph':
+            add_tools(langgraph_toolset)
+        elif context.framework == 'crewai':
+            add_tools(crewai_toolset)
+        elif context.framework == 'autogen':
+            add_tools(autogen_toolset)
+
+        # Environment determines deployment tools
+        if context.environment == 'azure':
+            add_tools(azure_toolset)
+        elif context.environment == 'openai':
+            add_tools(openai_toolset)
+
+        # Complexity determines additional tools
+        if context.complexity in ['complex', 'enterprise']:
+            add_tools(enterprise_toolset)
+
+        # Always include core tools
+        ensure_included(['Mermaid', 'Pytest', 'Git Registry'])
+
+        return selected_tools
+
+# ======================================
+# Tool Integration Best Practices
+# ======================================
+
+integration_best_practices:
+  blueprint_versioning:
+    all_projects: true
+    example: |
+      blueprint_metadata:
+        version: "1.0.0"
+        git_repository: "https://github.com/org/blueprints"
+        git_branch: "feature/user-research-agent"
+        last_updated: "2025-10-15"
+        tools_used:
+          - LangGraph
+          - Pydantic
+          - Mermaid
+
+  state_schema_design:
+    langgraph_projects: true
+    pattern: "TypedDict + Pydantic combination"
+    example: |
+      # TypedDict for LangGraph (required)
+      class AgentState(TypedDict):
+          input: str
+          output: str
+
+      # Pydantic for validation (recommended)
+      class AgentStateValidation(BaseModel):
+          input: str = Field(..., min_length=1)
+          output: str = Field(default="")
+
+  testing_strategy:
+    all_projects: true
+    specification: |
+      testing:
+        unit_tests:
+          - test_agent_node: "Verify agent decision logic"
+          - test_tool_node: "Verify tool execution and error handling"
+          - test_state_schema: "Validate state transitions"
+
+        integration_tests:
+          - test_full_workflow: "End-to-end agent execution"
+          - test_error_recovery: "Verify error handling and retries"
+
+        tools:
+          - pytest: "Unit and integration tests"
+          - LangSmith: "Dataset-based evaluation"
+          - Helicone: "Performance benchmarking"
+
+  visual_documentation:
+    all_projects: true
+    requirement: "Always include architecture diagram using Mermaid"
+
+  monitoring_configuration:
+    production_projects: true
+    example: |
+      monitoring:
+        tools:
+          - LangSmith Monitoring
+          - OpenTelemetry
+
+        metrics:
+          - latency_p50: "< 2s"
+          - latency_p95: "< 5s"
+          - success_rate: "> 95%"
+          - token_usage: "< 10k tokens/request"
+
+        alerts:
+          - error_rate: "> 5% for 5 minutes"
+          - latency: "> 10s for 3 consecutive requests"
